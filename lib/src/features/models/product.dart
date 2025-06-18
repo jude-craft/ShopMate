@@ -17,6 +17,8 @@ class Product {
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
+
+
   Product copyWith({
     String? id,
     String? name,

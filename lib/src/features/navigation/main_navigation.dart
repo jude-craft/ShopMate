@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/shop_provider.dart';
 import '../screens/home_screen.dart';
 import '../screens/report_screen.dart';
-import '../screens/sell_screen.dart';
+import '../screens/sales/sell_screen.dart';
+import '../screens/settings_screen.dart';
 import '../screens/stock_screen.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -52,7 +53,7 @@ class _MainNavigationState extends State<MainNavigation> {
           NavigationDestination(
             icon: Icon(Icons.shopping_cart_outlined),
             selectedIcon: Icon(Icons.shopping_cart),
-            label: 'Sell',
+            label: 'Sale',
           ),
           NavigationDestination(
             icon: Icon(Icons.inventory_2_outlined),
@@ -63,6 +64,11 @@ class _MainNavigationState extends State<MainNavigation> {
             icon: Icon(Icons.analytics_outlined),
             selectedIcon: Icon(Icons.analytics),
             label: 'Reports',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(Icons.settings),
+            label: 'Settings',
           ),
         ],
       ),

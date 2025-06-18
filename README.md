@@ -1,16 +1,11 @@
 # shop_mate
-
-A new Flutter project.
+ShopMate is an app that helps shop owners to record their sells and track their profit and also get alerts in case one runs out of stock 
 
 ## Getting Started
+# Frontend
+- Flutter + Dart
 
-This project is a starting point for a Flutter application.
+# Backend
+- Firebase
+- Sqlite
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

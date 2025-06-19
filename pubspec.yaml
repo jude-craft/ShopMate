@@ -16,6 +16,9 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   provider: ^6.1.5
+  flutter_animate: ^4.3.0
+  lottie: ^2.7.0
+
 
 
 dev_dependencies:

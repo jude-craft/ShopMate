@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/src/features/navigation/main_navigation.dart';
 import 'package:shop_mate/src/features/providers/theme_provider.dart';
+import 'package:shop_mate/src/features/screens/welcome/welcome_screen.dart';
 import 'package:shop_mate/src/features/theme/app_theme.dart';
 
 import 'src/features/providers/shop_provider.dart';
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
-            home:  MainNavigation(),
+            home:  WelcomeScreen(),
           );
         },
       ),

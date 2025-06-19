@@ -1,4 +1,3 @@
-// lib/widgets/welcome/welcome_content.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -160,33 +159,6 @@ class WelcomeContent extends StatelessWidget {
                 GetStartedButton(
                   fadeController: fadeController,
                   scaleController: scaleController,
-                ),
-                const SizedBox(height: 24),
-                Consumer<WelcomeProvider>(
-                  builder: (context, provider, _) {
-                    if (provider.isLoading) {
-                      return Column(
-                        children: [
-                          const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Loading...',
-                            style: AppTextStyles.body.copyWith(
-                              color: Colors.white.withOpacity(0.7),
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
                 ),
               ],
             ),

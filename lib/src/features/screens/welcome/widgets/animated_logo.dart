@@ -1,4 +1,3 @@
-// lib/widgets/welcome/animated_logo.dart
 import 'package:flutter/material.dart';
 
 class AnimatedLogo extends StatelessWidget {

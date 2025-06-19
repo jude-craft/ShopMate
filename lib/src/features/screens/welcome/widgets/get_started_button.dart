@@ -1,4 +1,3 @@
-// lib/widgets/welcome/get_started_button.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

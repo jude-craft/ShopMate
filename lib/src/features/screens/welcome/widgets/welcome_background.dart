@@ -1,4 +1,3 @@
-// lib/widgets/welcome/welcome_background.dart
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 

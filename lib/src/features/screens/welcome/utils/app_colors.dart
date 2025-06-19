@@ -1,4 +1,3 @@
-// lib/utils/app_colors.dart
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -6,7 +5,6 @@ class AppColors {
   static const Color primaryGradientStart = Color(0xFF667eea);
   static const Color primaryGradientEnd = Color(0xFF764ba2);
 
-  // Alternative gradient options (you can switch these)
   static const Color blueGradientStart = Color(0xFF2563EB);
   static const Color blueGradientEnd = Color(0xFF3B82F6);
 

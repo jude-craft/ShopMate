@@ -20,20 +20,28 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Appearance Section
             SettingsSection(
               title: 'Appearance',
               children: [
                 Consumer<ThemeProvider>(
                   builder: (context, themeProvider, child) {
+                    IconData icon;
+                    switch (themeProvider.themeMode) {
+                      case ThemeMode.light:
+                        icon = Icons.light_mode;
+                        break;
+                      case ThemeMode.dark:
+                        icon = Icons.dark_mode;
+                        break;
+                      case ThemeMode.system:
+                        icon = Icons.brightness_auto;
+                        break;
+                    }
+
                     return SettingsTile(
-                      icon: themeProvider.isDarkMode
-                          ? Icons.dark_mode
-                          : Icons.light_mode,
+                      icon: icon,
                       title: 'Theme',
-                      subtitle: themeProvider.isDarkMode
-                          ? 'Dark Mode'
-                          : 'Light Mode',
+                      subtitle: themeProvider.themeModeLabel,
                       trailing: Switch(
                         value: themeProvider.isDarkMode,
                         onChanged: (value) {

@@ -19,9 +19,9 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const SellScreen(),
+     SalesScreen(),
     const StockScreen(),
-    const ReportsScreen(),
+    const ReportScreen(),
     const SettingsScreen(),
   ];
 
@@ -53,7 +53,7 @@ class _MainNavigationState extends State<MainNavigation> {
           NavigationDestination(
             icon: Icon(Icons.shopping_cart_outlined),
             selectedIcon: Icon(Icons.shopping_cart),
-            label: 'Sale',
+            label: 'Sales',
           ),
           NavigationDestination(
             icon: Icon(Icons.inventory_2_outlined),

@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_mate/src/features/navigation/main_navigation.dart';
 import 'package:shop_mate/src/features/providers/theme_provider.dart';
+import 'package:shop_mate/src/features/screens/sales/sell_screen.dart';
 import 'package:shop_mate/src/features/screens/welcome/welcome_screen.dart';
 import 'package:shop_mate/src/features/theme/app_theme.dart';
 
 import 'src/features/providers/shop_provider.dart';
 
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final salesProvider = SalesProvider();
+  await salesProvider.initializeDatabase();
+
+  runApp(MyApp(salesProvider: salesProvider));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SalesProvider salesProvider;
+
+  const MyApp({super.key, required this.salesProvider});
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +28,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => ShopProvider()),
+        ChangeNotifierProvider.value(value: salesProvider),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -30,7 +38,7 @@ class MyApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
-            home:  WelcomeScreen(),
+            home: WelcomeScreen(),
           );
         },
       ),

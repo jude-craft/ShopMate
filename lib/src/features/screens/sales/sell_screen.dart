@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 import '../../backend/sales/sales_db.dart';
 import '../../providers/theme_provider.dart';
 
-
 class Sale {
   final String id;
   final String productName;
   final double price;
+  final double quantity;
   final DateTime dateTime;
   final PaymentMethod paymentMethod;
 
@@ -16,6 +16,7 @@ class Sale {
     required this.id,
     required this.productName,
     required this.price,
+    required this.quantity,
     required this.dateTime,
     required this.paymentMethod,
   });
@@ -26,6 +27,7 @@ class Sale {
       'id': id,
       'productName': productName,
       'price': price,
+      'quantity': quantity,
       'dateTime': dateTime.toIso8601String(),
       'paymentMethod': paymentMethod.toString().split('.').last,
     };
@@ -37,6 +39,7 @@ class Sale {
       id: map['id'],
       productName: map['productName'],
       price: map['price'],
+      quantity: map['quantity'],
       dateTime: DateTime.parse(map['dateTime']),
       paymentMethod: map['paymentMethod'] == 'mpesa'
           ? PaymentMethod.mpesa
@@ -73,7 +76,7 @@ class SalesProvider extends ChangeNotifier {
   Future<void> addSale(Sale sale) async {
     try {
       await _dbHelper.insertSale(sale.toMap());
-      _sales.insert(0, sale); // Add to beginning for recent-first order
+      _sales.insert(0, sale);
       notifyListeners();
     } catch (e) {
       print('Error adding sale: $e');
@@ -96,42 +99,50 @@ class SalesProvider extends ChangeNotifier {
   double get totalSalesToday {
     final today = DateTime.now();
     return _sales
-        .where((sale) =>
-    sale.dateTime.day == today.day &&
-        sale.dateTime.month == today.month &&
-        sale.dateTime.year == today.year)
+        .where(
+          (sale) =>
+              sale.dateTime.day == today.day &&
+              sale.dateTime.month == today.month &&
+              sale.dateTime.year == today.year,
+        )
         .fold(0.0, (sum, sale) => sum + sale.price);
   }
 
   double get mpesaSalesToday {
     final today = DateTime.now();
     return _sales
-        .where((sale) =>
-    sale.dateTime.day == today.day &&
-        sale.dateTime.month == today.month &&
-        sale.dateTime.year == today.year &&
-        sale.paymentMethod == PaymentMethod.mpesa)
+        .where(
+          (sale) =>
+              sale.dateTime.day == today.day &&
+              sale.dateTime.month == today.month &&
+              sale.dateTime.year == today.year &&
+              sale.paymentMethod == PaymentMethod.mpesa,
+        )
         .fold(0.0, (sum, sale) => sum + sale.price);
   }
 
   double get cashSalesToday {
     final today = DateTime.now();
     return _sales
-        .where((sale) =>
-    sale.dateTime.day == today.day &&
-        sale.dateTime.month == today.month &&
-        sale.dateTime.year == today.year &&
-        sale.paymentMethod == PaymentMethod.cash)
+        .where(
+          (sale) =>
+              sale.dateTime.day == today.day &&
+              sale.dateTime.month == today.month &&
+              sale.dateTime.year == today.year &&
+              sale.paymentMethod == PaymentMethod.cash,
+        )
         .fold(0.0, (sum, sale) => sum + sale.price);
   }
 
   List<Sale> get todaySales {
     final today = DateTime.now();
     return _sales
-        .where((sale) =>
-    sale.dateTime.day == today.day &&
-        sale.dateTime.month == today.month &&
-        sale.dateTime.year == today.year)
+        .where(
+          (sale) =>
+              sale.dateTime.day == today.day &&
+              sale.dateTime.month == today.month &&
+              sale.dateTime.year == today.year,
+        )
         .toList();
   }
 
@@ -175,117 +186,142 @@ class AllSalesScreen extends StatelessWidget {
           ),
           body: salesProvider.todaySales.isEmpty
               ? Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.receipt_long,
-                  size: 64,
-                  color: isDark ? Colors.grey[600] : Colors.grey[400],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No sales recorded today',
-                  style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          )
-              : ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: salesProvider.todaySales.length,
-            itemBuilder: (context, index) {
-              final sale = salesProvider.todaySales.reversed.toList()[index];
-              return Dismissible(
-                key: Key(sale.id),
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.only(right: 20),
-                  color: Colors.red,
-                  child: Icon(Icons.delete, color: Colors.white),
-                ),
-                onDismissed: (direction) async {
-                  await salesProvider.deleteSale(sale.id);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${sale.productName} deleted')),
-                  );
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.receipt_long,
+                        size: 64,
+                        color: isDark ? Colors.grey[600] : Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No sales recorded today',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          fontSize: 16,
+                        ),
                       ),
                     ],
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: sale.paymentMethod == PaymentMethod.mpesa
-                              ? const Color(0xFF00C851).withOpacity(0.1)
-                              : const Color(0xFF667EEA).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          sale.paymentMethod == PaymentMethod.mpesa
-                              ? Icons.phone_android
-                              : Icons.money,
-                          color: sale.paymentMethod == PaymentMethod.mpesa
-                              ? const Color(0xFF00C851)
-                              : const Color(0xFF667EEA),
-                          size: 24,
-                        ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: salesProvider.todaySales.length,
+                  itemBuilder: (context, index) {
+                    final sale = salesProvider.todaySales.reversed
+                        .toList()[index];
+                    return Dismissible(
+                      key: Key(sale.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        alignment: Alignment.centerRight,
+                        padding: EdgeInsets.only(right: 20),
+                        color: Colors.red,
+                        child: Icon(Icons.delete, color: Colors.white),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      onDismissed: (direction) async {
+                        await salesProvider.deleteSale(sale.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${sale.productName} deleted'),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF1E1E1E)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 5,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              sale.productName,
-                              style: TextStyle(
-                                color: isDark ? Colors.white : const Color(0xFF2D3748),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: sale.paymentMethod == PaymentMethod.mpesa
+                                    ? const Color(0xFF00C851).withOpacity(0.1)
+                                    : const Color(0xFF667EEA).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                sale.paymentMethod == PaymentMethod.mpesa
+                                    ? Icons.phone_android
+                                    : Icons.money,
+                                color: sale.paymentMethod == PaymentMethod.mpesa
+                                    ? const Color(0xFF00C851)
+                                    : const Color(0xFF667EEA),
+                                size: 24,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${sale.dateTime.hour.toString().padLeft(2, '0')}:${sale.dateTime.minute.toString().padLeft(2, '0')} • ${sale.paymentMethod == PaymentMethod.mpesa ? 'M-Pesa' : 'Cash'}',
-                              style: TextStyle(
-                                color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                fontSize: 14,
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    sale.productName,
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white
+                                          : const Color(0xFF2D3748),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    sale.quantity.toStringAsFixed(0),
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
                               ),
+                            ),
+                            Column(
+                              children: [
+                                Text(
+                                  'Ksh ${sale.price.toStringAsFixed(0)}',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.green
+                                        : Colors.greenAccent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${sale.dateTime.hour.toString().padLeft(2, '0')}:${sale.dateTime.minute.toString().padLeft(2, '0')}',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
-                      Text(
-                        'Ksh ${sale.price.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : const Color(0xFF2D3748),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         );
       },
     );
@@ -301,6 +337,7 @@ class SalesScreen extends StatefulWidget {
 class _SalesScreenState extends State<SalesScreen> {
   final TextEditingController _productController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
   PaymentMethod _selectedPaymentMethod = PaymentMethod.cash;
 
   @override
@@ -327,7 +364,6 @@ class _SalesScreenState extends State<SalesScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Today's Summary Card - Enhanced with payment method breakdown
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
@@ -491,7 +527,9 @@ class _SalesScreenState extends State<SalesScreen> {
                       Text(
                         'Add New Sale',
                         style: TextStyle(
-                          color: isDark ? Colors.white : const Color(0xFF2D3748),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF2D3748),
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
@@ -502,7 +540,9 @@ class _SalesScreenState extends State<SalesScreen> {
                       TextField(
                         controller: _productController,
                         style: TextStyle(
-                          color: isDark ? Colors.white : const Color(0xFF2D3748),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF2D3748),
                         ),
                         decoration: InputDecoration(
                           labelText: 'Product (e.g., Soda 500ml)',
@@ -510,14 +550,19 @@ class _SalesScreenState extends State<SalesScreen> {
                             color: isDark ? Colors.grey[400] : Colors.grey[600],
                           ),
                           filled: true,
-                          fillColor: isDark ? const Color(0xFF2D3748) : Colors.grey[100],
+                          fillColor: isDark
+                              ? const Color(0xFF2D3748)
+                              : Colors.grey[100],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF667EEA),
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -529,7 +574,9 @@ class _SalesScreenState extends State<SalesScreen> {
                         controller: _priceController,
                         keyboardType: TextInputType.number,
                         style: TextStyle(
-                          color: isDark ? Colors.white : const Color(0xFF2D3748),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF2D3748),
                         ),
                         decoration: InputDecoration(
                           labelText: 'Price (Ksh)',
@@ -537,14 +584,52 @@ class _SalesScreenState extends State<SalesScreen> {
                             color: isDark ? Colors.grey[400] : Colors.grey[600],
                           ),
                           filled: true,
-                          fillColor: isDark ? const Color(0xFF2D3748) : Colors.grey[100],
+                          fillColor: isDark
+                              ? const Color(0xFF2D3748)
+                              : Colors.grey[100],
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF667EEA), width: 2),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF667EEA),
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      TextField(
+                        controller: _quantityController,
+                        keyboardType: TextInputType.number,
+                        style: TextStyle(
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF2D3748),
+                        ),
+                        decoration: InputDecoration(
+                          labelText: 'Quantity',
+                          labelStyle: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color(0xFF2D3748)
+                              : Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF667EEA),
+                              width: 2,
+                            ),
                           ),
                         ),
                       ),
@@ -555,7 +640,9 @@ class _SalesScreenState extends State<SalesScreen> {
                       Text(
                         'Payment Method',
                         style: TextStyle(
-                          color: isDark ? Colors.white : const Color(0xFF2D3748),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF2D3748),
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -565,13 +652,22 @@ class _SalesScreenState extends State<SalesScreen> {
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setState(() => _selectedPaymentMethod = PaymentMethod.cash),
+                              onTap: () => setState(
+                                () =>
+                                    _selectedPaymentMethod = PaymentMethod.cash,
+                              ),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: _selectedPaymentMethod == PaymentMethod.cash
+                                  color:
+                                      _selectedPaymentMethod ==
+                                          PaymentMethod.cash
                                       ? const Color(0xFF667EEA)
-                                      : (isDark ? const Color(0xFF2D3748) : Colors.grey[200]),
+                                      : (isDark
+                                            ? const Color(0xFF2D3748)
+                                            : Colors.grey[200]),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -579,18 +675,26 @@ class _SalesScreenState extends State<SalesScreen> {
                                   children: [
                                     Icon(
                                       Icons.money,
-                                      color: _selectedPaymentMethod == PaymentMethod.cash
+                                      color:
+                                          _selectedPaymentMethod ==
+                                              PaymentMethod.cash
                                           ? Colors.white
-                                          : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                          : (isDark
+                                                ? Colors.grey[400]
+                                                : Colors.grey[600]),
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
                                       'Cash',
                                       style: TextStyle(
-                                        color: _selectedPaymentMethod == PaymentMethod.cash
+                                        color:
+                                            _selectedPaymentMethod ==
+                                                PaymentMethod.cash
                                             ? Colors.white
-                                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                            : (isDark
+                                                  ? Colors.grey[400]
+                                                  : Colors.grey[600]),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -602,13 +706,22 @@ class _SalesScreenState extends State<SalesScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setState(() => _selectedPaymentMethod = PaymentMethod.mpesa),
+                              onTap: () => setState(
+                                () => _selectedPaymentMethod =
+                                    PaymentMethod.mpesa,
+                              ),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: _selectedPaymentMethod == PaymentMethod.mpesa
+                                  color:
+                                      _selectedPaymentMethod ==
+                                          PaymentMethod.mpesa
                                       ? const Color(0xFF00C851)
-                                      : (isDark ? const Color(0xFF2D3748) : Colors.grey[200]),
+                                      : (isDark
+                                            ? const Color(0xFF2D3748)
+                                            : Colors.grey[200]),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
@@ -616,18 +729,26 @@ class _SalesScreenState extends State<SalesScreen> {
                                   children: [
                                     Icon(
                                       Icons.phone_android,
-                                      color: _selectedPaymentMethod == PaymentMethod.mpesa
+                                      color:
+                                          _selectedPaymentMethod ==
+                                              PaymentMethod.mpesa
                                           ? Colors.white
-                                          : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                          : (isDark
+                                                ? Colors.grey[400]
+                                                : Colors.grey[600]),
                                       size: 20,
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
                                       'M-Pesa',
                                       style: TextStyle(
-                                        color: _selectedPaymentMethod == PaymentMethod.mpesa
+                                        color:
+                                            _selectedPaymentMethod ==
+                                                PaymentMethod.mpesa
                                             ? Colors.white
-                                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
+                                            : (isDark
+                                                  ? Colors.grey[400]
+                                                  : Colors.grey[600]),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -670,7 +791,6 @@ class _SalesScreenState extends State<SalesScreen> {
 
                 const SizedBox(height: 24),
 
-                // Recent Sales with View All option
                 if (salesProvider.todaySales.isNotEmpty) ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -678,7 +798,9 @@ class _SalesScreenState extends State<SalesScreen> {
                       Text(
                         'Recent Sales',
                         style: TextStyle(
-                          color: isDark ? Colors.white : const Color(0xFF2D3748),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF2D3748),
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
@@ -687,11 +809,16 @@ class _SalesScreenState extends State<SalesScreen> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => AllSalesScreen()),
+                            MaterialPageRoute(
+                              builder: (context) => AllSalesScreen(),
+                            ),
                           );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFF667EEA).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
@@ -709,90 +836,112 @@ class _SalesScreenState extends State<SalesScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  ...salesProvider.todaySales.reversed.take(3).map((sale) =>
-                      Dismissible(
-                        key: Key(sale.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: EdgeInsets.only(right: 20),
-                          color: Colors.red,
-                          child: Icon(Icons.delete, color: Colors.white),
-                        ),
-                        onDismissed: (direction) async {
-                          await salesProvider.deleteSale(sale.id);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('${sale.productName} deleted')),
-                          );
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                  ...salesProvider.todaySales.reversed
+                      .take(3)
+                      .map(
+                        (sale) => Dismissible(
+                          key: Key(sale.id),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.only(right: 20),
+                            color: Colors.red,
+                            child: Icon(Icons.delete, color: Colors.white),
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: sale.paymentMethod == PaymentMethod.mpesa
-                                      ? const Color(0xFF00C851).withOpacity(0.1)
-                                      : const Color(0xFF667EEA).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  sale.paymentMethod == PaymentMethod.mpesa
-                                      ? Icons.phone_android
-                                      : Icons.money,
-                                  color: sale.paymentMethod == PaymentMethod.mpesa
-                                      ? const Color(0xFF00C851)
-                                      : const Color(0xFF667EEA),
-                                  size: 20,
-                                ),
+                          onDismissed: (direction) async {
+                            await salesProvider.deleteSale(sale.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${sale.productName} deleted'),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      sale.productName,
-                                      style: TextStyle(
-                                        color: isDark ? Colors.white : const Color(0xFF2D3748),
-                                        fontWeight: FontWeight.w500,
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF1E1E1E)
+                                  : Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 5,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        sale.paymentMethod ==
+                                            PaymentMethod.mpesa
+                                        ? const Color(
+                                            0xFF00C851,
+                                          ).withOpacity(0.1)
+                                        : const Color(
+                                            0xFF667EEA,
+                                          ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    sale.paymentMethod == PaymentMethod.mpesa
+                                        ? Icons.phone_android
+                                        : Icons.money,
+                                    color:
+                                        sale.paymentMethod ==
+                                            PaymentMethod.mpesa
+                                        ? const Color(0xFF00C851)
+                                        : const Color(0xFF667EEA),
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        sale.productName,
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : const Color(0xFF2D3748),
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      '${sale.dateTime.hour.toString().padLeft(2, '0')}:${sale.dateTime.minute.toString().padLeft(2, '0')}',
-                                      style: TextStyle(
-                                        color: isDark ? Colors.grey[400] : Colors.grey[600],
-                                        fontSize: 12,
+                                      Text(
+                                        '${sale.dateTime.hour.toString().padLeft(2, '0')}:${sale.dateTime.minute.toString().padLeft(2, '0')}',
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.grey[400]
+                                              : Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'Ksh ${sale.price.toStringAsFixed(0)}',
-                                style: TextStyle(
-                                  color: isDark ? Colors.white : const Color(0xFF2D3748),
-                                  fontWeight: FontWeight.w600,
+                                Text(
+                                  'Ksh ${sale.price.toStringAsFixed(0)}',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF2D3748),
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                  ).toList(),
+                      )
+                      .toList(),
                 ],
               ],
             ),
@@ -802,8 +951,8 @@ class _SalesScreenState extends State<SalesScreen> {
     );
   }
 
-  void _addSale() async { // Add async here
-    if (_productController.text.isEmpty || _priceController.text.isEmpty) {
+  void _addSale() async {
+    if (_productController.text.isEmpty || _priceController.text.isEmpty || _quantityController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please fill in all fields'),
@@ -825,20 +974,36 @@ class _SalesScreenState extends State<SalesScreen> {
       );
       return;
     }
+    final quantity = double.tryParse(_quantityController.text);
+    if (quantity == null || quantity <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please enter a valid quantity'),
+          backgroundColor: Colors.red[400],
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     final sale = Sale(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       productName: _productController.text,
       price: price,
+      quantity: quantity,
       dateTime: DateTime.now(),
       paymentMethod: _selectedPaymentMethod,
     );
 
     try {
-      await Provider.of<SalesProvider>(context, listen: false).addSale(sale); // Add await here
+      await Provider.of<SalesProvider>(
+        context,
+        listen: false,
+      ).addSale(sale);
 
       _productController.clear();
       _priceController.clear();
+      _quantityController.clear();
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -862,6 +1027,7 @@ class _SalesScreenState extends State<SalesScreen> {
   void dispose() {
     _productController.dispose();
     _priceController.dispose();
+    _quantityController.dispose();
     super.dispose();
   }
 }

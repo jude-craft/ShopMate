@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/src/features/providers/theme_provider.dart';
-import 'package:shop_mate/src/features/screens/sales/sell_screen.dart';
+import 'package:shop_mate/src/features/screens/sales/provider/sales_provider.dart';
 import 'package:shop_mate/src/features/screens/welcome/welcome_screen.dart';
 import 'package:shop_mate/src/features/theme/app_theme.dart';
 

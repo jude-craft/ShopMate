@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
+import '../../../backend/stocks/stocks_db.dart';
 import '../model/stock_model.dart';
 
 class StockProvider extends ChangeNotifier {
-  //final DatabaseService _databaseService = DatabaseService();
+  final DatabaseService _databaseService = DatabaseService();
 
   List<Stock> _stocks = [];
   bool _isLoading = false;
@@ -27,8 +28,8 @@ class StockProvider extends ChangeNotifier {
 
   // Load all stocks from database
   Future<void> loadStocks() async {
-   // _setLoading(true);
-   /* try {
+    _setLoading(true);
+    try {
       _stocks = await _databaseService.getAllStocks();
       _error = '';
     } catch (e) {
@@ -36,13 +37,13 @@ class StockProvider extends ChangeNotifier {
       debugPrint(_error);
     } finally {
       _setLoading(false);
-    } */
+    }
   }
 
   // Add new stock
   Future<bool> addStock(Stock stock) async {
-    /* try {
-       final id = await _databaseService.insertStock(stock);
+    try {
+      final id = await _databaseService.insertStock(stock);
       if (id > 0) {
         final newStock = stock.copyWith(id: id);
         _stocks.add(newStock);
@@ -54,13 +55,12 @@ class StockProvider extends ChangeNotifier {
       _error = 'Failed to add stock: $e';
       debugPrint(_error);
       return false;
-    } */
-    return false;
+    }
   }
 
   // Update existing stock
   Future<bool> updateStock(Stock stock) async {
-    /*try {
+    try {
       final success = await _databaseService.updateStock(stock);
       if (success) {
         final index = _stocks.indexWhere((s) => s.id == stock.id);
@@ -75,13 +75,12 @@ class StockProvider extends ChangeNotifier {
       _error = 'Failed to update stock: $e';
       debugPrint(_error);
       return false;
-    } */
-    return false;
+    }
   }
 
   // Delete stock
   Future<bool> deleteStock(int id) async {
-    /*try {
+    try {
       final success = await _databaseService.deleteStock(id);
       if (success) {
         _stocks.removeWhere((stock) => stock.id == id);
@@ -94,13 +93,11 @@ class StockProvider extends ChangeNotifier {
       debugPrint(_error);
       return false;
     }
-     */
-    return true;
   }
 
   // Update sold quantity (called from sales)
   Future<bool> updateSoldQuantity(int stockId, int quantitySold) async {
-    /*try {
+    try {
       final stockIndex = _stocks.indexWhere((stock) => stock.id == stockId);
       if (stockIndex == -1) return false;
 
@@ -121,13 +118,11 @@ class StockProvider extends ChangeNotifier {
       debugPrint(_error);
       return false;
     }
-     */
-    return false;
   }
 
   // Clear all stock data
   Future<bool> clearAllStock() async {
-    /*try {
+    try {
       final success = await _databaseService.clearAllStocks();
       if (success) {
         _stocks.clear();
@@ -140,8 +135,6 @@ class StockProvider extends ChangeNotifier {
       debugPrint(_error);
       return false;
     }
-     */
-    return true;
   }
 
   // Get stock by ID
@@ -161,6 +154,17 @@ class StockProvider extends ChangeNotifier {
       );
     } catch (e) {
       return null;
+    }
+  }
+
+  // Search stocks from database
+  Future<List<Stock>> searchStocks(String query) async {
+    try {
+      return await _databaseService.searchStocks(query);
+    } catch (e) {
+      _error = 'Failed to search stocks: $e';
+      debugPrint(_error);
+      return [];
     }
   }
 
@@ -207,21 +211,100 @@ class StockProvider extends ChangeNotifier {
     return _stocks.where((stock) => stock.category == category).toList();
   }
 
-  // Get all categories
+  // Get all categories from database
+  Future<List<String>> getAllCategoriesFromDB() async {
+    try {
+      return await _databaseService.getAllCategories();
+    } catch (e) {
+      _error = 'Failed to get categories: $e';
+      debugPrint(_error);
+      return [];
+    }
+  }
+
+  // Get all categories from current loaded stocks
   List<String> getAllCategories() {
     final categories = _stocks.map((stock) => stock.category).toSet().toList();
     categories.sort();
     return categories;
   }
 
-  // Get low stock alerts
+  // Get all suppliers from database
+  Future<List<String>> getAllSuppliersFromDB() async {
+    try {
+      return await _databaseService.getAllSuppliers();
+    } catch (e) {
+      _error = 'Failed to get suppliers: $e';
+      debugPrint(_error);
+      return [];
+    }
+  }
+
+  // Get low stock alerts from database
+  Future<List<Stock>> getLowStockAlertsFromDB() async {
+    try {
+      return await _databaseService.getLowStockItems();
+    } catch (e) {
+      _error = 'Failed to get low stock alerts: $e';
+      debugPrint(_error);
+      return [];
+    }
+  }
+
+  // Get low stock alerts from current stocks
   List<Stock> getLowStockAlerts() {
     return _stocks.where((stock) => stock.isLowStock || stock.isOutOfStock).toList();
   }
 
-  // Get expiry alerts
+  // Get out of stock alerts from database
+  Future<List<Stock>> getOutOfStockAlertsFromDB() async {
+    try {
+      return await _databaseService.getOutOfStockItems();
+    } catch (e) {
+      _error = 'Failed to get out of stock alerts: $e';
+      debugPrint(_error);
+      return [];
+    }
+  }
+
+  // Get expiry alerts from database
+  Future<List<Stock>> getExpiryAlertsFromDB() async {
+    try {
+      final expired = await _databaseService.getExpiredItems();
+      final expiringSoon = await _databaseService.getExpiringSoonItems();
+      return [...expired, ...expiringSoon];
+    } catch (e) {
+      _error = 'Failed to get expiry alerts: $e';
+      debugPrint(_error);
+      return [];
+    }
+  }
+
+  // Get expiry alerts from current stocks
   List<Stock> getExpiryAlerts() {
     return _stocks.where((stock) => stock.isExpired || stock.isExpiringSoon).toList();
+  }
+
+  // Get expired items from database
+  Future<List<Stock>> getExpiredItemsFromDB() async {
+    try {
+      return await _databaseService.getExpiredItems();
+    } catch (e) {
+      _error = 'Failed to get expired items: $e';
+      debugPrint(_error);
+      return [];
+    }
+  }
+
+  // Get expiring soon items from database
+  Future<List<Stock>> getExpiringSoonItemsFromDB() async {
+    try {
+      return await _databaseService.getExpiringSoonItems();
+    } catch (e) {
+      _error = 'Failed to get expiring soon items: $e';
+      debugPrint(_error);
+      return [];
+    }
   }
 
   // Calculate total investment
@@ -239,13 +322,18 @@ class StockProvider extends ChangeNotifier {
     return _stocks.fold(0.0, (sum, stock) => sum + stock.totalProfit);
   }
 
-  // Private helper methods
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
+  // Get stock statistics from database
+  Future<Map<String, dynamic>> getStockStatisticsFromDB() async {
+    try {
+      return await _databaseService.getStockStatistics();
+    } catch (e) {
+      _error = 'Failed to get stock statistics: $e';
+      debugPrint(_error);
+      return getStockStatistics(); // Fallback to local calculation
+    }
   }
 
-  // Get stock statistics for reports
+  // Get stock statistics from current loaded stocks
   Map<String, dynamic> getStockStatistics() {
     return {
       'totalProducts': _stocks.length,
@@ -258,5 +346,70 @@ class StockProvider extends ChangeNotifier {
       'totalProfit': getTotalProfit(),
       'categories': getAllCategories().length,
     };
+  }
+
+  // Backup stocks data
+  Future<List<Map<String, dynamic>>> backupStocks() async {
+    try {
+      return await _databaseService.backupStocks();
+    } catch (e) {
+      _error = 'Failed to backup stocks: $e';
+      debugPrint(_error);
+      return [];
+    }
+  }
+
+  // Restore stocks from backup
+  Future<bool> restoreStocks(List<Map<String, dynamic>> stocksData) async {
+    try {
+      final success = await _databaseService.restoreStocks(stocksData);
+      if (success) {
+        await loadStocks(); // Reload stocks after restore
+      }
+      return success;
+    } catch (e) {
+      _error = 'Failed to restore stocks: $e';
+      debugPrint(_error);
+      return false;
+    }
+  }
+
+  // Initialize database and load initial data
+  Future<void> initializeDatabase() async {
+    try {
+      // Initialize database connection
+      await _databaseService.database;
+
+      // Load initial stock data
+      await loadStocks();
+
+      debugPrint('Stock database initialized successfully');
+    } catch (e) {
+      _error = 'Failed to initialize database: $e';
+      debugPrint(_error);
+    }
+  }
+
+  // Private helper methods
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    notifyListeners();
+  }
+
+  // Clear error message
+  void clearError() {
+    _error = '';
+    notifyListeners();
+  }
+
+  // Refresh stocks from database
+  Future<void> refreshStocks() async {
+    await loadStocks();
+  }
+
+  @override
+  void dispose() {
+    _databaseService.close();
+    super.dispose();
   }
 }

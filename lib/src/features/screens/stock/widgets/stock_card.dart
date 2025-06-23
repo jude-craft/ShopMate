@@ -140,7 +140,7 @@ class StockCard extends StatelessWidget {
                     child: _buildInfoItem(
                       'Buy Price',
                       '\$${stock.buyingPrice.toStringAsFixed(2)}',
-                      Icons.monetization_on,
+                      Icons.money,
                       Colors.orange,
                       isDark,
                     ),
@@ -149,7 +149,7 @@ class StockCard extends StatelessWidget {
                     child: _buildInfoItem(
                       'Sell Price',
                       '\$${stock.sellingPrice.toStringAsFixed(2)}',
-                      Icons.attach_money,
+                      Icons.money,
                       Colors.blue,
                       isDark,
                     ),
@@ -163,7 +163,7 @@ class StockCard extends StatelessWidget {
               Row(
                 children: [
                   Text(
-                    'Profit: \$${stock.totalProfit.toStringAsFixed(2)}',
+                    'Profit: \${stock.totalProfit.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,

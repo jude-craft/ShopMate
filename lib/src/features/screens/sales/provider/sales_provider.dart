@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-
 import '../../../backend/sales/sales_db.dart';
 import '../models/sale_model.dart';
 

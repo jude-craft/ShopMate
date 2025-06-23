@@ -5,7 +5,7 @@ import '../screens/home_screen.dart';
 import '../screens/report_screen.dart';
 import '../screens/sales/sell_screen.dart';
 import '../screens/settings_screen.dart';
-import '../screens/stock_screen.dart';
+import '../screens/stock/stock_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});

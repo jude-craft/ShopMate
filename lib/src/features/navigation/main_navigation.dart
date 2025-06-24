@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_mate/src/features/screens/reports/reports_screen.dart';
 import '../providers/shop_provider.dart';
 import '../screens/home_screen.dart';
-import '../screens/report_screen.dart';
 import '../screens/sales/sell_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/stock/stock_screen.dart';
@@ -21,7 +21,7 @@ class _MainNavigationState extends State<MainNavigation> {
     const HomeScreen(),
      SalesScreen(),
     const StockScreen(),
-    const ReportScreen(),
+    const ReportsScreen(),
     const SettingsScreen(),
   ];
 

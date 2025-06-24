@@ -64,7 +64,7 @@ class DatabaseService {
 
   // Handle database upgrades
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    // Handle future database schema changes here
+    // Handle future database schema changes
     if (oldVersion < newVersion) {
       // For Adding new columns or tables for future versions
       // await db.execute('ALTER TABLE stocks ADD COLUMN newColumn TEXT');

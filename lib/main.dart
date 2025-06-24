@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/src/features/providers/theme_provider.dart';
+import 'package:shop_mate/src/features/screens/reports/provider/reports_provider.dart';
 import 'package:shop_mate/src/features/screens/sales/provider/sales_provider.dart';
 import 'package:shop_mate/src/features/screens/stock/provider/stock_provider.dart';
 import 'package:shop_mate/src/features/screens/welcome/welcome_screen.dart';
@@ -42,6 +43,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ShopProvider()),
         ChangeNotifierProvider.value(value: salesProvider),
         ChangeNotifierProvider.value(value: stockProvider),
+        ChangeNotifierProvider(create: (_) => ReportProvider()),
+
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

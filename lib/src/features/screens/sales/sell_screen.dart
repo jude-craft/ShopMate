@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/src/features/screens/sales/provider/sales_provider.dart';
 
-import '../../backend/sales/sales_db.dart';
 import '../../providers/theme_provider.dart';
 import 'models/sale_model.dart';
 import 'screen/all_sales_screen.dart';

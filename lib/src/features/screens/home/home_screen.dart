@@ -1,45 +1,91 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/shop_provider.dart';
-import '../widgets/low_stock_alert.dart';
-import '../widgets/quick_actions.dart';
-import '../widgets/recent_sales_list.dart';
-import '../widgets/starts_card.dart';
 
+import '../../providers/shop_provider.dart';
+import '../../widgets/low_stock_alert.dart';
+import '../../widgets/quick_actions.dart';
+import '../../widgets/recent_sales_list.dart';
+import '../../widgets/starts_card.dart';
+import 'service/greeting_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  String _getGreeting() {
-    int hour = DateTime.now().hour;
+  Widget _buildEnhancedGreeting(BuildContext context, {double? todayRevenue, double? targetRevenue}) {
+    final GreetingModel greeting;
 
-    if(hour<12){
-      return 'Hello! Good Morning 🌄';
-    } else if(hour<17){
-      return 'Hello! Good Afternoon 🕑';
-    } else{
-      return 'Hello! Good Evening 🌆';
+    if (todayRevenue != null && targetRevenue != null && targetRevenue > 0) {
+      greeting = GreetingService.getPerformanceBasedGreeting(todayRevenue, targetRevenue);
+    } else {
+      greeting = GreetingService.getCoolGreeting();
     }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                greeting.emoji,
+                style: const TextStyle(fontSize: 24),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  greeting.mainText,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            greeting.subtitle,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
   }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(
-              'Shop Manager',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
+        title: Text(
+          'Shop Manager',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
-
+      ),
       body: Consumer<ShopProvider>(
         builder: (context, shopProvider, child) {
           return RefreshIndicator(
             onRefresh: () async {
-              // Simulate refresh
               await Future.delayed(const Duration(seconds: 1));
             },
             child: SingleChildScrollView(
@@ -48,15 +94,15 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    _getGreeting(),
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  _buildEnhancedGreeting(
+                    context,
+                    todayRevenue: shopProvider.todayRevenue,
+                    targetRevenue: 10000, // Set your daily target here
                   ),
 
-                  const SizedBox(height:20 ,),
-                  // Stats Cards Row
+
+                  const SizedBox(height: 20),
+
                   Row(
                     children: [
                       Expanded(

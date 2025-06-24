@@ -87,13 +87,6 @@ class _ReportsScreenState extends State<ReportsScreen>
             ),
             child: TabBar(
               controller: _tabController,
-              indicator: UnderlineTabIndicator(
-                borderSide: BorderSide(
-                  width: 3.0,
-                  color: theme.primaryColor,
-                ),
-                insets: const EdgeInsets.symmetric(horizontal: 16.0),
-              ),
               labelColor: isDark ? Colors.white : theme.primaryColor,
               unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey[600],
               labelStyle: const TextStyle(
@@ -213,12 +206,16 @@ class _ReportsScreenState extends State<ReportsScreen>
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(
-          color: isDark
-              ? theme.primaryColor.withOpacity(0.3)
-              : theme.primaryColor.withOpacity(0.2),
-          width: 1,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.3)
+                : theme.primaryColor.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -276,18 +273,22 @@ class _ReportsScreenState extends State<ReportsScreen>
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: isDark
-            ? Border.all(color: Colors.grey[800]!, width: 1)
-            : null,
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(0.08),
-            blurRadius: isDark ? 15 : 10,
-            offset: const Offset(0, 4),
-            spreadRadius: isDark ? 2 : 0,
+                ? Colors.black.withOpacity(0.6)
+                : Colors.black.withOpacity(0.12),
+            blurRadius: isDark ? 20 : 15,
+            offset: const Offset(0, 6),
+            spreadRadius: isDark ? 3 : 1,
           ),
+          if (isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
         ],
       ),
       child: ChartWidget(
@@ -306,18 +307,22 @@ class _ReportsScreenState extends State<ReportsScreen>
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: isDark
-            ? Border.all(color: Colors.grey[800]!, width: 1)
-            : null,
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(0.08),
-            blurRadius: isDark ? 15 : 10,
-            offset: const Offset(0, 4),
-            spreadRadius: isDark ? 2 : 0,
+                ? Colors.black.withOpacity(0.6)
+                : Colors.black.withOpacity(0.12),
+            blurRadius: isDark ? 20 : 15,
+            offset: const Offset(0, 6),
+            spreadRadius: isDark ? 3 : 1,
           ),
+          if (isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
         ],
       ),
       child: ChartWidget(
@@ -375,18 +380,22 @@ class _ReportsScreenState extends State<ReportsScreen>
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: isDark
-            ? Border.all(color: Colors.grey[800]!, width: 1)
-            : null,
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(0.08),
-            blurRadius: isDark ? 15 : 10,
-            offset: const Offset(0, 4),
-            spreadRadius: isDark ? 2 : 0,
+                ? Colors.black.withOpacity(0.6)
+                : Colors.black.withOpacity(0.12),
+            blurRadius: isDark ? 20 : 15,
+            offset: const Offset(0, 6),
+            spreadRadius: isDark ? 3 : 1,
           ),
+          if (isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
         ],
       ),
       child: Column(
@@ -430,18 +439,22 @@ class _ReportsScreenState extends State<ReportsScreen>
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: isDark
-            ? Border.all(color: Colors.grey[800]!, width: 1)
-            : null,
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(0.08),
-            blurRadius: isDark ? 15 : 10,
-            offset: const Offset(0, 4),
-            spreadRadius: isDark ? 2 : 0,
+                ? Colors.black.withOpacity(0.6)
+                : Colors.black.withOpacity(0.12),
+            blurRadius: isDark ? 20 : 15,
+            offset: const Offset(0, 6),
+            spreadRadius: isDark ? 3 : 1,
           ),
+          if (isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
         ],
       ),
       child: Column(
@@ -543,18 +556,22 @@ class _ReportsScreenState extends State<ReportsScreen>
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: isDark
-            ? Border.all(color: Colors.grey[800]!, width: 1)
-            : null,
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withOpacity(0.4)
-                : Colors.black.withOpacity(0.08),
-            blurRadius: isDark ? 15 : 10,
-            offset: const Offset(0, 4),
-            spreadRadius: isDark ? 2 : 0,
+                ? Colors.black.withOpacity(0.6)
+                : Colors.black.withOpacity(0.12),
+            blurRadius: isDark ? 20 : 15,
+            offset: const Offset(0, 6),
+            spreadRadius: isDark ? 3 : 1,
           ),
+          if (isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
         ],
       ),
       child: Column(

@@ -6,9 +6,6 @@ import '../../providers/theme_provider.dart';
 import 'models/sale_model.dart';
 import 'screen/all_sales_screen.dart';
 
-
-
-// Sales Screen
 class SalesScreen extends StatefulWidget {
   @override
   _SalesScreenState createState() => _SalesScreenState();
@@ -632,7 +629,9 @@ class _SalesScreenState extends State<SalesScreen> {
   }
 
   void _addSale() async {
-    if (_productController.text.isEmpty || _priceController.text.isEmpty || _quantityController.text.isEmpty) {
+    if (_productController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _quantityController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please fill in all fields'),
@@ -676,10 +675,7 @@ class _SalesScreenState extends State<SalesScreen> {
     );
 
     try {
-      await Provider.of<SalesProvider>(
-        context,
-        listen: false,
-      ).addSale(sale);
+      await Provider.of<SalesProvider>(context, listen: false).addSale(sale);
 
       _productController.clear();
       _priceController.clear();

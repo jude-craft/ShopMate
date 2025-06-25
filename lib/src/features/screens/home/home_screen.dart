@@ -11,14 +11,8 @@ import 'service/greeting_service.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  Widget _buildEnhancedGreeting(BuildContext context, {double? todayRevenue, double? targetRevenue}) {
-    final GreetingModel greeting;
-
-    if (todayRevenue != null && targetRevenue != null && targetRevenue > 0) {
-      greeting = GreetingService.getPerformanceBasedGreeting(todayRevenue, targetRevenue);
-    } else {
-      greeting = GreetingService.getCoolGreeting();
-    }
+  Widget _buildEnhancedGreeting(BuildContext context) {
+    final greeting = GreetingService.getCoolGreeting();
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -41,10 +35,7 @@ class HomeScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                greeting.emoji,
-                style: const TextStyle(fontSize: 24),
-              ),
+              Text(greeting.emoji, style: const TextStyle(fontSize: 24)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -70,16 +61,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Shop Manager',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
       body: Consumer<ShopProvider>(
@@ -94,12 +84,7 @@ class HomeScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildEnhancedGreeting(
-                    context,
-                    todayRevenue: shopProvider.todayRevenue,
-                    targetRevenue: 10000, // Set your daily target here
-                  ),
-
+                  _buildEnhancedGreeting(context),
 
                   const SizedBox(height: 20),
 
@@ -108,7 +93,8 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: StatsCard(
                           title: 'Today\'s Sales',
-                          value: 'KSh ${shopProvider.todayRevenue.toStringAsFixed(0)}',
+                          value:
+                              'KSh ${shopProvider.todayRevenue.toStringAsFixed(0)}',
                           icon: Icons.attach_money,
                           color: Colors.green,
                           trend: '+12%',

@@ -146,4 +146,67 @@ class DatabaseHelper {
       print('Error clearing sales: $e');
     }
   }
+  Future<List<Map<String, dynamic>>> getSalesByDateRange(
+      DateTime startDate,
+      DateTime endDate
+      ) async {
+    final db = await database;
+    final startTimestamp = startDate.millisecondsSinceEpoch;
+    final endTimestamp = endDate.millisecondsSinceEpoch;
+
+    return await db.query(
+      'sales',
+      where: 'dateTime >= ? AND dateTime <= ?',
+      whereArgs: [startTimestamp, endTimestamp],
+      orderBy: 'dateTime DESC',
+    );
+  }
+
+  // Get sales for a specific date
+  Future<List<Map<String, dynamic>>> getSalesForDate(DateTime date) async {
+    final startOfDay = DateTime(date.year, date.month, date.day);
+    final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+    return await getSalesByDateRange(startOfDay, endOfDay);
+  }
+
+  // Get sales for a specific month
+  Future<List<Map<String, dynamic>>> getSalesForMonth(DateTime date) async {
+    final startOfMonth = DateTime(date.year, date.month, 1);
+    final endOfMonth = DateTime(date.year, date.month + 1, 0, 23, 59, 59);
+
+    return await getSalesByDateRange(startOfMonth, endOfMonth);
+  }
+
+  // Get sales statistics for a date range
+  Future<Map<String, dynamic>> getSalesStats(
+      DateTime startDate,
+      DateTime endDate
+      ) async {
+    final db = await database;
+    final startTimestamp = startDate.millisecondsSinceEpoch;
+    final endTimestamp = endDate.millisecondsSinceEpoch;
+
+    final result = await db.rawQuery('''
+      SELECT 
+        COUNT(*) as count,
+        SUM(price) as total,
+        SUM(CASE WHEN paymentMethod = 'mpesa' THEN price ELSE 0 END) as mpesa_total,
+        SUM(CASE WHEN paymentMethod = 'cash' THEN price ELSE 0 END) as cash_total
+      FROM sales 
+      WHERE dateTime >= ? AND dateTime <= ?
+    ''', [startTimestamp, endTimestamp]);
+
+    return result.first;
+  }
+
+  // Get recent sales (for dashboard - last N records)
+  Future<List<Map<String, dynamic>>> getRecentSales(int limit) async {
+    final db = await database;
+    return await db.query(
+      'sales',
+      orderBy: 'dateTime DESC',
+      limit: limit,
+    );
+  }
 }

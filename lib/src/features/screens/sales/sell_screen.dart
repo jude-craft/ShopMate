@@ -469,19 +469,45 @@ class _SalesScreenState extends State<SalesScreen> {
                 const SizedBox(height: 24),
 
                 if (salesProvider.todaySales.isNotEmpty) ...[
+                  // Simple Header Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Recent Sales',
-                        style: TextStyle(
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF2D3748),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      // Recent Sales Text with Transaction Count
+                      Row(
+                        children: [
+                          Text(
+                            'Recent Sales',
+                            style: TextStyle(
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF2D3748),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF667EEA).withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${salesProvider.todaySales.length}',
+                              style: TextStyle(
+                                color: const Color(0xFF667EEA),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+                      // View All Button
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -512,112 +538,274 @@ class _SalesScreenState extends State<SalesScreen> {
                       ),
                     ],
                   ),
+
                   const SizedBox(height: 12),
-                  ...salesProvider.todaySales.reversed
+
+                  ...(salesProvider.todaySales
+                    ..sort((a, b) => b.dateTime.compareTo(a.dateTime)))
                       .take(3)
-                      .map(
-                        (sale) => Dismissible(
-                          key: Key(sale.id),
-                          direction: DismissDirection.endToStart,
-                          background: Container(
-                            alignment: Alignment.centerRight,
-                            padding: EdgeInsets.only(right: 20),
-                            color: Colors.red,
-                            child: Icon(Icons.delete, color: Colors.white),
-                          ),
-                          onDismissed: (direction) async {
-                            await salesProvider.deleteSale(sale.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${sale.productName} deleted'),
+                      .toList()
+                      .asMap()
+                      .entries
+                      .map((entry) {
+                        final index = entry.key;
+                        final sale = entry.value;
+
+                        return AnimatedContainer(
+                          duration: Duration(milliseconds: 300 + (index * 100)),
+                          curve: Curves.easeOutCubic,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: Dismissible(
+                            key: Key(sale.id),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 20),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFFFF6B6B),
+                                    Color(0xFFEE5A52),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                            );
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF1E1E1E)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        sale.paymentMethod ==
-                                            PaymentMethod.mpesa
-                                        ? const Color(
-                                            0xFF00C851,
-                                          ).withOpacity(0.1)
-                                        : const Color(
-                                            0xFF667EEA,
-                                          ).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                            onDismissed: (direction) async {
+                              await salesProvider.deleteSale(sale.id);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle,
+                                        color: Colors.white,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '${sale.productName} deleted successfully',
+                                      ),
+                                    ],
                                   ),
-                                  child: Icon(
-                                    sale.paymentMethod == PaymentMethod.mpesa
-                                        ? Icons.phone_android
-                                        : Icons.money,
-                                    color:
-                                        sale.paymentMethod ==
-                                            PaymentMethod.mpesa
-                                        ? const Color(0xFF00C851)
-                                        : const Color(0xFF667EEA),
-                                    size: 20,
+                                  backgroundColor: const Color(0xFF00C851),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? const Color(0xFF1E1E1E)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.grey[800]!
+                                      : Colors.grey[200]!,
+                                  width: 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(
+                                      isDark ? 0.3 : 0.08,
+                                    ),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors:
+                                            sale.paymentMethod ==
+                                                PaymentMethod.mpesa
+                                            ? [
+                                                const Color(0xFF00C851),
+                                                const Color(0xFF00A843),
+                                              ]
+                                            : [
+                                                const Color(0xFF667EEA),
+                                                const Color(0xFF764BA2),
+                                              ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color:
+                                              (sale.paymentMethod ==
+                                                          PaymentMethod.mpesa
+                                                      ? const Color(0xFF00C851)
+                                                      : const Color(0xFF667EEA))
+                                                  .withOpacity(0.3),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Icon(
+                                      sale.paymentMethod == PaymentMethod.mpesa
+                                          ? Icons.phone_android
+                                          : Icons.account_balance_wallet,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                  ),
+
+                                  const SizedBox(width: 16),
+
+                                  // Product Details
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          sale.productName,
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? Colors.white
+                                                : const Color(0xFF2D3748),
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 16,
+                                            letterSpacing: -0.3,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.access_time,
+                                              size: 14,
+                                              color: isDark
+                                                  ? Colors.grey[400]
+                                                  : Colors.grey[600],
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '${sale.dateTime.hour.toString().padLeft(2, '0')}:${sale.dateTime.minute.toString().padLeft(2, '0')}',
+                                              style: TextStyle(
+                                                color: isDark
+                                                    ? Colors.grey[400]
+                                                    : Colors.grey[600],
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    (sale.paymentMethod ==
+                                                                PaymentMethod
+                                                                    .mpesa
+                                                            ? const Color(
+                                                                0xFF00C851,
+                                                              )
+                                                            : const Color(
+                                                                0xFF667EEA,
+                                                              ))
+                                                        .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                sale.paymentMethod ==
+                                                        PaymentMethod.mpesa
+                                                    ? 'M-PESA'
+                                                    : 'CASH',
+                                                style: TextStyle(
+                                                  color:
+                                                      sale.paymentMethod ==
+                                                          PaymentMethod.mpesa
+                                                      ? const Color(0xFF00C851)
+                                                      : const Color(0xFF667EEA),
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Price with enhanced styling
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        sale.productName,
+                                        'Ksh ${sale.price.toStringAsFixed(0)}',
                                         style: TextStyle(
-                                          color: isDark
-                                              ? Colors.white
-                                              : const Color(0xFF2D3748),
-                                          fontWeight: FontWeight.w500,
+                                          color: const Color(0xFF00C851),
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 18,
+                                          letterSpacing: -0.5,
                                         ),
                                       ),
-                                      Text(
-                                        '${sale.dateTime.hour.toString().padLeft(2, '0')}:${sale.dateTime.minute.toString().padLeft(2, '0')}',
-                                        style: TextStyle(
-                                          color: isDark
-                                              ? Colors.grey[400]
-                                              : Colors.grey[600],
-                                          fontSize: 12,
+                                      const SizedBox(height: 2),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(
+                                            0xFF00C851,
+                                          ).withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          'PAID',
+                                          style: TextStyle(
+                                            color: const Color(0xFF00C851),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                                Text(
-                                  'Ksh ${sale.price.toStringAsFixed(0)}',
-                                  style: TextStyle(
-                                    color: isDark
-                                        ? Colors.white
-                                        : const Color(0xFF2D3748),
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      )
+                        );
+                      })
                       .toList(),
                 ],
               ],

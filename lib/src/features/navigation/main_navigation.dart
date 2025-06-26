@@ -11,19 +11,31 @@ class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
   @override
-  State<MainNavigation> createState() => _MainNavigationState();
+  State<MainNavigation> createState() => MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> {
-  int _currentIndex = 0;
+class MainNavigationState extends State<MainNavigation> {
+  int _currentIndex = 0; // Keep private
 
   final List<Widget> _screens = [
     const HomeScreen(),
-     SalesScreen(),
+    SalesScreen(),
     const StockScreen(),
     const ReportsScreen(),
     const SettingsScreen(),
   ];
+
+  // Add this public method to navigate to specific tabs
+  void navigateToTab(int index) {
+    if (index >= 0 && index < _screens.length) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
+  }
+
+  // Add getter for current index if needed
+  int get currentIndex => _currentIndex;
 
   @override
   void initState() {
@@ -40,9 +52,7 @@ class _MainNavigationState extends State<MainNavigation> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          navigateToTab(index); // Use the new method
         },
         destinations: const [
           NavigationDestination(

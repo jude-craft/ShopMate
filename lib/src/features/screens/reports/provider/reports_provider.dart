@@ -167,7 +167,6 @@ class ReportProvider with ChangeNotifier {
     return [];
   }
 
-  // Refresh all data
   Future<void> refresh() async {
     await loadReports();
   }

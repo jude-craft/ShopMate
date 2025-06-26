@@ -542,7 +542,7 @@ class _SalesScreenState extends State<SalesScreen> {
                   const SizedBox(height: 12),
 
                   ...(salesProvider.todaySales
-                    ..sort((a, b) => b.dateTime.compareTo(a.dateTime)))
+                        ..sort((a, b) => b.dateTime.compareTo(a.dateTime)))
                       .take(3)
                       .toList()
                       .asMap()
@@ -761,8 +761,6 @@ class _SalesScreenState extends State<SalesScreen> {
                                       ],
                                     ),
                                   ),
-
-                                  // Price with enhanced styling
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [

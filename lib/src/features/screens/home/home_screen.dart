@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_mate/src/features/screens/sales/provider/sales_provider.dart';
+import 'package:shop_mate/src/features/screens/sales/screen/all_sales_screen.dart';
 
-import '../../providers/shop_provider.dart';
-import '../../widgets/low_stock_alert.dart';
+import '../../navigation/main_navigation.dart';
 import '../../widgets/quick_actions.dart';
 import '../../widgets/recent_sales_list.dart';
 import '../../widgets/starts_card.dart';
@@ -61,6 +62,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  void _navigateToSales(BuildContext context) {
+    final mainNavState = context.findAncestorStateOfType<MainNavigationState>();
+    mainNavState?.navigateToTab(1);
+  }
+  void _navigateToStocks(BuildContext context) {
+    final mainNavState = context.findAncestorStateOfType<MainNavigationState>();
+    mainNavState?.navigateToTab(2);
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,8 +84,8 @@ class HomeScreen extends StatelessWidget {
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
-      body: Consumer<ShopProvider>(
-        builder: (context, shopProvider, child) {
+      body: Consumer<SalesProvider>(
+        builder: (context, salesProvider, child) {
           return RefreshIndicator(
             onRefresh: () async {
               await Future.delayed(const Duration(seconds: 1));
@@ -93,18 +105,16 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: StatsCard(
                           title: 'Today\'s Sales',
-                          value:
-                              'KSh ${shopProvider.todayRevenue.toStringAsFixed(0)}',
+                          value: 'KSh ${salesProvider.totalSalesToday.toStringAsFixed(0)}',
                           icon: Icons.attach_money,
                           color: Colors.green,
-                          trend: '+12%',
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: StatsCard(
                           title: 'Products',
-                          value: '${shopProvider.totalProducts}',
+                          value: '1',
                           icon: Icons.inventory_2,
                           color: Colors.blue,
                         ),
@@ -114,8 +124,8 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Low Stock Alert
-                  if (shopProvider.lowStockProducts.isNotEmpty)
-                    LowStockAlert(products: shopProvider.lowStockProducts),
+                  //if (shopProvider.lowStockProducts.isNotEmpty)
+                  //LowStockAlert(products: shopProvider.lowStockProducts),
 
                   const SizedBox(height: 16),
 
@@ -135,7 +145,7 @@ class HomeScreen extends StatelessWidget {
                           icon: Icons.add_shopping_cart,
                           color: Colors.green,
                           onTap: () {
-                            // Navigate to sell screen
+                            _navigateToSales(context);
                           },
                         ),
                       ),
@@ -146,7 +156,7 @@ class HomeScreen extends StatelessWidget {
                           icon: Icons.add_box,
                           color: Colors.blue,
                           onTap: () {
-                            // Navigate to add product
+                            _navigateToStocks(context);
                           },
                         ),
                       ),
@@ -154,7 +164,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // Recent Sales
                   Text(
                     'Recent Sales',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -162,7 +171,34 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  RecentSalesList(sales: shopProvider.todaySales),
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Recent Sales',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AllSalesScreen(),
+                                ),
+                              );
+                            },
+                            child: const Text('View All'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      RecentSalesList(sales: salesProvider.todaySales.take(3).toList()),
+                    ],
+                  ),
                 ],
               ),
             ),

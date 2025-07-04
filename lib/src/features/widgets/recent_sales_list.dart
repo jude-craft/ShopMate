@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shop_mate/src/features/models/sales.dart';
 
 import '../screens/sales/models/sale_model.dart';
 

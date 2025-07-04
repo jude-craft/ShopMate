@@ -23,6 +23,9 @@ class StockProvider extends ChangeNotifier {
   // Get expired products count
   int get expiredCount => _stocks.where((stock) => stock.isExpired).length;
 
+  // Get low stock items
+  List<Stock> get lowStockItems => _stocks.where((stock) => stock.isLowStock || stock.isOutOfStock).toList();
+
   // Get expiring soon count
   int get expiringSoonCount => _stocks.where((stock) => stock.isExpiringSoon).length;
 

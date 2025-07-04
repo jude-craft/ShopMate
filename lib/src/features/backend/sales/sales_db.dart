@@ -129,6 +129,21 @@ class DatabaseHelper {
     }
   }
 
+  // Get recent sales
+  Future<List<Map<String, dynamic>>> getRecentSales(int limit) async {
+    try {
+      final db = await database;
+      return await db.query(
+        'sales',
+        orderBy: 'dateTime DESC',
+        limit: limit,
+      );
+    } catch (e) {
+      print('Error getting recent sales: $e');
+      return [];
+    }
+  }
+
   // Close database
   Future<void> close() async {
     final db = await _database;
@@ -199,14 +214,5 @@ class DatabaseHelper {
 
     return result.first;
   }
-
-  // Get recent sales (for dashboard - last N records)
-  Future<List<Map<String, dynamic>>> getRecentSales(int limit) async {
-    final db = await database;
-    return await db.query(
-      'sales',
-      orderBy: 'dateTime DESC',
-      limit: limit,
-    );
-  }
+  
 }

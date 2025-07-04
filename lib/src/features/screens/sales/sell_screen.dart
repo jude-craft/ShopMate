@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shop_mate/src/features/screens/sales/provider/sales_provider.dart';
 
 import '../../providers/theme_provider.dart';
+import '../../screens/stock/provider/stock_provider.dart';
 import 'models/sale_model.dart';
 import 'screen/all_sales_screen.dart';
 
@@ -242,6 +243,87 @@ class _SalesScreenState extends State<SalesScreen> {
                             ),
                           ),
                         ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Stock Information Display
+                      Consumer<StockProvider>(
+                        builder: (context, stockProvider, child) {
+                          final stock = stockProvider.getStockByName(_productController.text);
+                          if (stock != null) {
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: isDark ? const Color(0xFF2D3748) : Colors.blue[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: stock.isLowStock ? Colors.orange : Colors.blue,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline,
+                                        size: 16,
+                                        color: stock.isLowStock ? Colors.orange : Colors.blue,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Stock Information',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: stock.isLowStock ? Colors.orange : Colors.blue,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          'Available: ${stock.remainingStock} ${stock.unit}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isDark ? Colors.white70 : Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          'Profit/Unit: \$${stock.profitPerUnit.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isDark ? Colors.white70 : Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (stock.isLowStock)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4),
+                                      child: Text(
+                                        '⚠️ Low stock alert!',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.orange,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
                       ),
 
                       const SizedBox(height: 16),
@@ -849,6 +931,32 @@ class _SalesScreenState extends State<SalesScreen> {
         ),
       );
       return;
+    }
+
+    // Check stock availability
+    final stockProvider = Provider.of<StockProvider>(context, listen: false);
+    final stock = stockProvider.getStockByName(_productController.text);
+    
+    if (stock != null) {
+      if (stock.remainingStock < quantity.toInt()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Insufficient stock! Available: ${stock.remainingStock}'),
+            backgroundColor: Colors.orange[400],
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    } else {
+      // Product not in stock - show warning but allow sale
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Product not found in stock. Sale will be recorded without stock tracking.'),
+          backgroundColor: Colors.orange[400],
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
 
     final sale = Sale(

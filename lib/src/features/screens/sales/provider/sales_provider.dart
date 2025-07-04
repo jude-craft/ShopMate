@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import '../../../backend/sales/sales_db.dart';
 import '../models/sale_model.dart';
+import '../../stock/provider/stock_provider.dart';
 
 class SalesProvider extends ChangeNotifier {
   List<Sale> _sales = [];
   final DatabaseHelper _dbHelper = DatabaseHelper();
+  StockProvider? _stockProvider;
 
   List<Sale> get sales => _sales;
 
   // Initialize and load sales from database
   Future<void> initializeDatabase() async {
     await loadSalesFromDatabase();
+  }
+
+  // Set stock provider reference
+  void setStockProvider(StockProvider stockProvider) {
+    _stockProvider = stockProvider;
   }
 
   // Load all sales from database
@@ -31,6 +38,15 @@ class SalesProvider extends ChangeNotifier {
     try {
       await _dbHelper.insertSale(sale.toMap());
       _sales.insert(0, sale);
+      
+      // Update stock quantity if stock provider is available
+      if (_stockProvider != null) {
+        final stock = _stockProvider!.getStockByName(sale.productName);
+        if (stock != null) {
+          await _stockProvider!.updateSoldQuantity(stock.id!, sale.quantity.toInt());
+        }
+      }
+      
       notifyListeners();
     } catch (e) {
       print('Error adding sale: $e');

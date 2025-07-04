@@ -397,6 +397,23 @@ class DatabaseService {
       throw DatabaseException('Failed to restore stocks: $e');
     }
   }
+  Future<Stock?> getStockByName(String productName) async {
+  final db = await database;
+  try {
+    final List<Map<String, dynamic>> maps = await db.query(
+      _stockTable,
+      where: 'productName = ?',
+      whereArgs: [productName],
+      limit: 1,
+    );
+    if (maps.isNotEmpty) {
+      return Stock.fromMap(maps.first);
+    }
+    return null;
+  } catch (e) {
+    throw DatabaseException('Failed to get stock by name: $e');
+  }
+}
 
   // Close database
   Future<void> close() async {

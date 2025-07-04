@@ -1,13 +1,13 @@
-import 'package:flutter/foundation.dart';
-
+import 'package:flutter/material.dart';
+import '../../../backend/reports/reports_db.dart';
 import '../model/report_model.dart';
 
-
-class ReportProvider with ChangeNotifier {
+class ReportProvider extends ChangeNotifier {
+  final ReportsDatabaseHelper _reportsDb = ReportsDatabaseHelper();
   bool _isLoading = false;
   String _currentPeriod = 'Today';
 
-  // Report data
+  // Data properties
   double _totalSales = 0.0;
   double _totalProfit = 0.0;
   int _totalTransactions = 0;
@@ -22,7 +22,6 @@ class ReportProvider with ChangeNotifier {
 
   // Getters
   bool get isLoading => _isLoading;
-  String get currentPeriod => _currentPeriod;
   double get totalSales => _totalSales;
   double get totalProfit => _totalProfit;
   int get totalTransactions => _totalTransactions;
@@ -34,201 +33,89 @@ class ReportProvider with ChangeNotifier {
   List<TransactionModel> get recentTransactions => _recentTransactions;
   List<ProductPerformance> get topProducts => _topProducts;
 
-  // Load all report data
+  // Load all reports data
   Future<void> loadReports() async {
-    _setLoading(true);
+    _isLoading = true;
+    notifyListeners();
 
     try {
-      await Future.wait([
-        _loadReportSummary(),
-        _loadSalesChartData(),
-        _loadRecentTransactions(),
-        _loadTopProducts(),
-        _loadTopProductsChartData(),
-      ]);
+      await _loadSummaryData();
+      await _loadChartData();
+      await _loadTransactions();
+      await _loadTopProducts();
     } catch (e) {
-      debugPrint('Error loading reports: $e');
+      print('Error loading reports: $e');
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   // Filter reports by period
   Future<void> filterByPeriod(String period) async {
-    if (_currentPeriod == period) return;
-
     _currentPeriod = period;
     await loadReports();
   }
 
-  // Load report summary
-  Future<void> _loadReportSummary() async {
-    /*try {
-      final summary = await ReportDatabaseHelper.getReportSummary(_currentPeriod);
-      _totalSales = summary.totalSales;
-      _totalProfit = summary.totalProfit;
-      _totalTransactions = summary.totalTransactions;
-      _totalItemsSold = summary.totalItemsSold;
-      _salesTrend = summary.salesTrend;
-      _profitTrend = summary.profitTrend;
-    } catch (e) {
-      debugPrint('Error loading report summary: $e');
-      _resetSummaryData();
-    }
+  // Load summary data based on current period
+  Future<void> _loadSummaryData() async {
+    try {
+      final reportSummary = await _reportsDb.getReportSummary(_currentPeriod);
+      
+      _totalSales = reportSummary.totalSales;
+      _totalProfit = reportSummary.totalProfit;
+      _totalTransactions = reportSummary.totalTransactions;
+      _totalItemsSold = reportSummary.totalItemsSold;
+      _salesTrend = reportSummary.salesTrend;
+      _profitTrend = reportSummary.profitTrend;
 
-     */
+    } catch (e) {
+      print('Error loading summary data: $e');
+    }
   }
 
-  // Load sales chart data
-  Future<void> _loadSalesChartData() async {
-    /* try {
-      _salesChartData = await ReportDatabaseHelper.getSalesChartData(_currentPeriod);
+  // Load chart data
+  Future<void> _loadChartData() async {
+    try {
+      _salesChartData = await _reportsDb.getSalesChartData(_currentPeriod);
+      _topProductsData = await _generateTopProductsChartData();
     } catch (e) {
-      debugPrint('Error loading sales chart data: $e');
-      _salesChartData = [];
+      print('Error loading chart data: $e');
     }
-
-     */
   }
 
   // Load recent transactions
-  Future<void> _loadRecentTransactions() async {
-   /* try {
-      _recentTransactions = await ReportDatabaseHelper.getRecentTransactions(limit: 10);
+  Future<void> _loadTransactions() async {
+    try {
+      _recentTransactions = await _reportsDb.getRecentTransactions(limit: 10);
     } catch (e) {
-      debugPrint('Error loading recent transactions: $e');
-      _recentTransactions = [];
+      print('Error loading transactions: $e');
     }
-
-    */
   }
 
   // Load top products
   Future<void> _loadTopProducts() async {
-    /*try {
-      _topProducts = await ReportDatabaseHelper.getTopProducts(_currentPeriod, limit: 10);
-    } catch (e) {
-      debugPrint('Error loading top products: $e');
-      _topProducts = [];
-    }
-
-     */
-  }
-
-  // Load top products chart data
-  Future<void> _loadTopProductsChartData() async {
-    /*try {
-      _topProductsData = await ReportDatabaseHelper.getTopProductsChartData(_currentPeriod, limit: 5);
-    } catch (e) {
-      debugPrint('Error loading top products chart data: $e');
-      _topProductsData = [];
-    }
-
-     */
-  }
-
-  // Get profit margin analysis
-  Future<List<Map<String, dynamic>>> getProfitMarginAnalysis() async {
-    /*try {
-      return await ReportDatabaseHelper.getProfitMarginAnalysis(_currentPeriod);
-    } catch (e) {
-      debugPrint('Error loading profit margin analysis: $e');
-      return [];
-    }
-
-     */
-    return [];
-  }
-
-  // Get low stock alerts
-  Future<List<Map<String, dynamic>>> getLowStockAlerts({int threshold = 10}) async {
-    /*try {
-      return await ReportDatabaseHelper.getLowStockProducts(threshold: threshold);
-    } catch (e) {
-      debugPrint('Error loading low stock alerts: $e');
-      return [];
-    }
-
-     */
-    return [];
-  }
-
-  // Get sales data for export
-  Future<List<Map<String, dynamic>>> getSalesDataForExport(
-      DateTime startDate,
-      DateTime endDate
-      ) async {
     try {
-      //return await ReportDatabaseHelper.getSalesInDateRange(startDate, endDate);
+      _topProducts = await _reportsDb.getTopProducts(_currentPeriod, limit: 10);
     } catch (e) {
-      debugPrint('Error loading sales data for export: $e');
+      print('Error loading top products: $e');
+    }
+  }
+
+  // Generate top products chart data
+  Future<List<ChartData>> _generateTopProductsChartData() async {
+    try {
+      final topProductsData = _topProducts.take(5).map((product) {
+        String label = product.name.length > 8
+            ? '${product.name.substring(0, 8)}...'
+            : product.name;
+        return ChartData(label: label, value: product.revenue);
+      }).toList();
+
+      return topProductsData;
+    } catch (e) {
+      print('Error generating top products chart data: $e');
       return [];
-    }
-    return [];
-  }
-
-  Future<void> refresh() async {
-    await loadReports();
-  }
-
-  // Helper methods
-  void _setLoading(bool loading) {
-    _isLoading = loading;
-    notifyListeners();
-  }
-
-  void _resetSummaryData() {
-    _totalSales = 0.0;
-    _totalProfit = 0.0;
-    _totalTransactions = 0;
-    _totalItemsSold = 0;
-    _salesTrend = 0.0;
-    _profitTrend = 0.0;
-  }
-
-  // Get formatted currency
-  String getFormattedCurrency(double amount) {
-    return '\$${amount.toStringAsFixed(2)}';
-  }
-
-  // Get formatted percentage
-  String getFormattedPercentage(double percentage) {
-    final sign = percentage >= 0 ? '+' : '';
-    return '$sign${percentage.toStringAsFixed(1)}%';
-  }
-
-  // Check if data is available
-  bool get hasData => _totalSales > 0 || _totalTransactions > 0;
-
-  // Get period display name
-  String get periodDisplayName {
-    switch (_currentPeriod) {
-      case 'Today':
-        return 'Today';
-      case 'Week':
-        return 'This Week';
-      case 'Month':
-        return 'This Month';
-      case 'Year':
-        return 'This Year';
-      default:
-        return _currentPeriod;
-    }
-  }
-
-  // Get comparison period name
-  String get comparisonPeriodName {
-    switch (_currentPeriod) {
-      case 'Today':
-        return 'Yesterday';
-      case 'Week':
-        return 'Last Week';
-      case 'Month':
-        return 'Last Month';
-      case 'Year':
-        return 'Last Year';
-      default:
-        return 'Previous Period';
     }
   }
 }

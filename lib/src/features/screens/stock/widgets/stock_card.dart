@@ -162,26 +162,53 @@ class StockCard extends StatelessWidget {
               // Profit and progress bar
               Row(
                 children: [
-                  Text(
-                    'Profit: \${stock.totalProfit.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: stock.totalProfit >= 0 ? Colors.green : Colors.red,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Total Profit: \$${stock.totalProfit.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: stock.totalProfit >= 0 ? Colors.green : Colors.red,
+                          ),
+                        ),
+                        Text(
+                          'Per Unit: \$${stock.profitPerUnit.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Spacer(),
                   if (stock.expiryDate != null)
-                    Text(
-                      'Exp: ${_formatDate(stock.expiryDate!)}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: stock.isExpired
-                            ? Colors.red
-                            : stock.isExpiringSoon
-                            ? Colors.orange
-                            : (isDark ? Colors.white70 : Colors.black54),
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Expires: ${_formatDate(stock.expiryDate!)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: stock.isExpired
+                                ? Colors.red
+                                : stock.isExpiringSoon
+                                ? Colors.orange
+                                : (isDark ? Colors.white70 : Colors.black54),
+                          ),
+                        ),
+                        if (stock.isExpired)
+                          Text(
+                            'EXPIRED',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                      ],
                     ),
                 ],
               ),

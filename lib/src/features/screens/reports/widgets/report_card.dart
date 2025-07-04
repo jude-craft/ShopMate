@@ -5,7 +5,7 @@ class ReportCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
-  final double? trend;
+  final double trend;
 
   const ReportCard({
     Key? key,
@@ -13,24 +13,34 @@ class ReportCard extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.color,
-    this.trend,
+    required this.trend,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: isDark
+                ? Colors.black.withOpacity(0.6)
+                : Colors.black.withOpacity(0.12),
+            blurRadius: isDark ? 20 : 15,
+            offset: const Offset(0, 6),
+            spreadRadius: isDark ? 3 : 1,
           ),
+          if (isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
         ],
       ),
       child: Column(
@@ -42,31 +52,30 @@ class ReportCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withOpacity(isDark ? 0.2 : 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 20,
-                ),
+                child: Icon(icon, color: color, size: 24),
               ),
-              if (trend != null) _buildTrendIndicator(),
+              _buildTrendIndicator(),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             value,
-            style: theme.textTheme.headlineSmall?.copyWith(
+            style: TextStyle(
+              fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: theme.textTheme.headlineSmall?.color,
+              color: isDark ? Colors.white : Colors.black87,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             title,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
         ],
@@ -75,33 +84,29 @@ class ReportCard extends StatelessWidget {
   }
 
   Widget _buildTrendIndicator() {
-    if (trend == null || trend == 0) return const SizedBox.shrink();
+    if (trend == 0) return const SizedBox.shrink();
 
-    final isPositive = trend! > 0;
-    final trendColor = isPositive ? Colors.green : Colors.red;
-    final trendIcon = isPositive ? Icons.trending_up : Icons.trending_down;
+    final isPositive = trend > 0;
+    final color = isPositive ? Colors.green : Colors.red;
+    final icon = isPositive ? Icons.trending_up : Icons.trending_down;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: trendColor.withOpacity(0.1),
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            trendIcon,
-            size: 12,
-            color: trendColor,
-          ),
+          Icon(icon, color: color, size: 12),
           const SizedBox(width: 2),
           Text(
-            '${trend!.abs().toStringAsFixed(1)}%',
+            '${trend.abs().toStringAsFixed(1)}%',
             style: TextStyle(
+              color: color,
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: trendColor,
             ),
           ),
         ],
@@ -109,3 +114,5 @@ class ReportCard extends StatelessWidget {
     );
   }
 }
+
+

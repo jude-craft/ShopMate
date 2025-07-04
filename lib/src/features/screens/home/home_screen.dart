@@ -2,15 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_mate/src/features/screens/sales/provider/sales_provider.dart';
 import 'package:shop_mate/src/features/screens/sales/screen/all_sales_screen.dart';
+import 'package:shop_mate/src/features/screens/stock/provider/stock_provider.dart';
 
 import '../../navigation/main_navigation.dart';
 import '../../widgets/quick_actions.dart';
+import '../../widgets/low_stock_alert.dart';
 import '../../widgets/recent_sales_list.dart';
 import '../../widgets/starts_card.dart';
 import 'service/greeting_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<StockProvider>().loadStocks();
+    });
+  }
 
   Widget _buildEnhancedGreeting(BuildContext context) {
     final greeting = GreetingService.getCoolGreeting();
@@ -84,10 +99,11 @@ class HomeScreen extends StatelessWidget {
           ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
       ),
-      body: Consumer<SalesProvider>(
-        builder: (context, salesProvider, child) {
+      body: Consumer2<SalesProvider, StockProvider>(
+        builder: (context, salesProvider, stockProvider, child) {
           return RefreshIndicator(
             onRefresh: () async {
+              await stockProvider.loadStocks();
               await Future.delayed(const Duration(seconds: 1));
             },
             child: SingleChildScrollView(
@@ -114,9 +130,31 @@ class HomeScreen extends StatelessWidget {
                       Expanded(
                         child: StatsCard(
                           title: 'Products',
-                          value: '1',
+                          value: '${stockProvider.stocks.length}',
                           icon: Icons.inventory_2,
                           color: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: StatsCard(
+                          title: 'Low Stock',
+                          value: '${stockProvider.lowStockCount}',
+                          icon: Icons.warning,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: StatsCard(
+                          title: 'Out of Stock',
+                          value: '${stockProvider.outOfStockCount}',
+                          icon: Icons.error,
+                          color: Colors.red,
                         ),
                       ),
                     ],
@@ -124,10 +162,9 @@ class HomeScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // Low Stock Alert
-                  //if (shopProvider.lowStockProducts.isNotEmpty)
-                  //LowStockAlert(products: shopProvider.lowStockProducts),
-
-                  const SizedBox(height: 16),
+                  LowStockAlert(
+                    stocks: stockProvider.lowStockItems,
+                  ),
 
                   // Quick Actions
                   Text(
@@ -163,14 +200,6 @@ class HomeScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  Text(
-                    'Recent Sales',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   Column(
                     children: [
                       Row(

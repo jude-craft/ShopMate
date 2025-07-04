@@ -1,320 +1,368 @@
-/*// database/report_database_helper.dart
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 import '../../screens/reports/model/report_model.dart';
+import '../sales/sales_db.dart';
+import '../stocks/stocks_db.dart';
+import '../../screens/sales/models/sale_model.dart';
 
-
-class ReportDatabaseHelper {
+class ReportsDatabaseHelper {
+  static final ReportsDatabaseHelper _instance =
+      ReportsDatabaseHelper._internal();
   static Database? _database;
 
-  // Get database instance (assuming you already have this set up)
-  static Future<Database> get database async {
+  ReportsDatabaseHelper._internal();
+
+  factory ReportsDatabaseHelper() => _instance;
+
+  Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
 
-  static Future<Database> _initDatabase() async {
-    // This should connect to your existing database
-    // Update the path to match your existing database
-    String path = 'shopmate.db';
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createTables,
-    );
+  Future<Database> _initDatabase() async {
+    String path = join(await getDatabasesPath(), 'reports.db');
+    return await openDatabase(path, version: 1, onCreate: _createTables);
   }
 
-  static Future<void> _createTables(Database db, int version) async {
-    // Assuming you already have sales and products tables
-    // Add any additional tables if needed
+  Future<void> _createTables(Database db, int version) async {
+    // Create reports cache table for performance
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS sales (
+      CREATE TABLE IF NOT EXISTS reports_cache (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        product_id INTEGER,
-        quantity INTEGER,
-        unit_price REAL,
-        total_amount REAL,
-        profit REAL,
-        sale_date TEXT,
-        FOREIGN KEY (product_id) REFERENCES products (id)
+        period TEXT NOT NULL,
+        total_sales REAL NOT NULL,
+        total_profit REAL NOT NULL,
+        total_transactions INTEGER NOT NULL,
+        total_items_sold INTEGER NOT NULL,
+        sales_trend REAL NOT NULL,
+        profit_trend REAL NOT NULL,
+        last_updated TEXT NOT NULL
       )
     ''');
 
+    // Create product performance cache
     await db.execute('''
-      CREATE TABLE IF NOT EXISTS products (
+      CREATE TABLE IF NOT EXISTS product_performance_cache (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        cost_price REAL,
-        selling_price REAL,
-        stock_quantity INTEGER,
-        created_at TEXT
+        period TEXT NOT NULL,
+        product_name TEXT NOT NULL,
+        units_sold INTEGER NOT NULL,
+        revenue REAL NOT NULL,
+        profit REAL NOT NULL,
+        last_updated TEXT NOT NULL
       )
     ''');
   }
 
   // Get report summary for a specific period
-  static Future<ReportSummary> getReportSummary(String period) async {
-    final db = await database;
-    final dateFilter = _getDateFilter(period);
+  Future<ReportSummary> getReportSummary(String period) async {
+    try {
+      final salesDb = DatabaseHelper();
+      final stockDb = DatabaseService();
 
-    // Get total sales and profit
-    final salesResult = await db.rawQuery('''
-      SELECT
-        COALESCE(SUM(total_amount), 0) as total_sales,
-        COALESCE(SUM(profit), 0) as total_profit,
-        COUNT(*) as total_transactions,
-        COALESCE(SUM(quantity), 0) as total_items_sold
-      FROM sales
-      WHERE sale_date >= ?
-    ''', [dateFilter]);
+      final dateRange = _getDateRange(period);
+      final currentSales = await _getSalesInRange(
+        salesDb,
+        dateRange['start']!,
+        dateRange['end']!,
+      );
 
-    // Get previous period data for trend calculation
-    final previousDateFilter = _getPreviousDateFilter(period);
-    final previousSalesResult = await db.rawQuery('''
-      SELECT
-        COALESCE(SUM(total_amount), 0) as prev_sales,
-        COALESCE(SUM(profit), 0) as prev_profit
-      FROM sales
-      WHERE sale_date >= ? AND sale_date < ?
-    ''', [previousDateFilter, dateFilter]);
+      // Get previous period for trend calculation
+      final previousRange = _getPreviousDateRange(period);
+      final previousSales = await _getSalesInRange(
+        salesDb,
+        previousRange['start']!,
+        previousRange['end']!,
+      );
 
-    final current = salesResult.first;
-    final previous = previousSalesResult.first;
+      // Calculate current period totals
+      final totalSales = currentSales.fold<double>(
+        0.0,
+        (sum, sale) => sum + sale.price,
+      );
+      final totalTransactions = currentSales.length;
+      final totalItemsSold = currentSales.fold<int>(
+        0,
+        (sum, sale) => sum + sale.quantity.toInt(),
+      );
 
-    // Calculate trends
-    final currentSales = (current['total_sales'] as num).toDouble();
-    final prevSales = (previous['prev_sales'] as num).toDouble();
-    final currentProfit = (current['total_profit'] as num).toDouble();
-    final prevProfit = (previous['prev_profit'] as num).toDouble();
+      // Calculate profit from stock data
+      double totalProfit = 0.0;
+      for (var sale in currentSales) {
+        final stock = await stockDb.getStockByName(sale.productName);
+        if (stock != null) {
+          final profitPerUnit = stock.profitPerUnit;
+          totalProfit += profitPerUnit * sale.quantity;
+        } else {
+          // Assume 30% profit margin if stock not found
+          totalProfit += sale.price * 0.3;
+        }
+      }
 
-    final salesTrend = prevSales > 0 ? ((currentSales - prevSales) / prevSales) * 100 : 0.0;
-    final profitTrend = prevProfit > 0 ? ((currentProfit - prevProfit) / prevProfit) * 100 : 0.0;
+      // Calculate previous period totals for trend
+      final previousTotalSales = previousSales.fold<double>(
+        0.0,
+        (sum, sale) => sum + sale.price,
+      );
+      double previousTotalProfit = 0.0;
+      for (var sale in previousSales) {
+        final stock = await stockDb.getStockByName(sale.productName);
+        if (stock != null) {
+          final profitPerUnit = stock.profitPerUnit;
+          previousTotalProfit += profitPerUnit * sale.quantity;
+        } else {
+          previousTotalProfit += sale.price * 0.3;
+        }
+      }
 
-    return ReportSummary(
-      totalSales: currentSales,
-      totalProfit: currentProfit,
-      totalTransactions: (current['total_transactions'] as num).toInt(),
-      totalItemsSold: (current['total_items_sold'] as num).toInt(),
-      salesTrend: salesTrend,
-      profitTrend: profitTrend,
-    );
+      // Calculate trends
+      final salesTrend = previousTotalSales > 0
+          ? ((totalSales - previousTotalSales) / previousTotalSales) * 100
+          : 0.0;
+      final profitTrend = previousTotalProfit > 0
+          ? ((totalProfit - previousTotalProfit) / previousTotalProfit) * 100
+          : 0.0;
+
+      return ReportSummary(
+        totalSales: totalSales,
+        totalProfit: totalProfit,
+        totalTransactions: totalTransactions,
+        totalItemsSold: totalItemsSold,
+        salesTrend: salesTrend,
+        profitTrend: profitTrend,
+      );
+    } catch (e) {
+      print('Error getting report summary: $e');
+      return ReportSummary(
+        totalSales: 0.0,
+        totalProfit: 0.0,
+        totalTransactions: 0,
+        totalItemsSold: 0,
+        salesTrend: 0.0,
+        profitTrend: 0.0,
+      );
+    }
   }
 
   // Get sales chart data
-  static Future<List<ChartData>> getSalesChartData(String period) async {
-    final db = await database;
-    final dateFilter = _getDateFilter(period);
+  Future<List<ChartData>> getSalesChartData(String period) async {
+    try {
+      final salesDb = DatabaseHelper();
+      final dateRange = _getDateRange(period);
+      final sales = await _getSalesInRange(
+        salesDb,
+        dateRange['start']!,
+        dateRange['end']!,
+      );
 
-    String groupBy;
-    String dateFormat;
+      Map<String, double> groupedData = {};
 
-    switch (period) {
-      case 'Today':
-        groupBy = "strftime('%H', sale_date)";
-        dateFormat = '%H:00';
-        break;
-      case 'Week':
-        groupBy = "DATE(sale_date)";
-        dateFormat = '%m/%d';
-        break;
-      case 'Month':
-        groupBy = "DATE(sale_date)";
-        dateFormat = '%m/%d';
-        break;
-      case 'Year':
-        groupBy = "strftime('%Y-%m', sale_date)";
-        dateFormat = '%m/%Y';
-        break;
-      default:
-        groupBy = "DATE(sale_date)";
-        dateFormat = '%m/%d';
-    }
-
-    final result = await db.rawQuery('''
-      SELECT
-        $groupBy as period,
-        COALESCE(SUM(total_amount), 0) as total_sales
-      FROM sales
-      WHERE sale_date >= ?
-      GROUP BY $groupBy
-      ORDER BY period
-    ''', [dateFilter]);
-
-    return result.map((row) {
-      String label;
-      if (period == 'Today') {
-        label = '${row['period']}:00';
-      } else if (period == 'Year') {
-        label = row['period'].toString();
-      } else {
-        label = row['period'].toString().substring(5); // Remove year part
+      for (var sale in sales) {
+        String key = _getChartKey(sale.dateTime, period);
+        groupedData[key] = (groupedData[key] ?? 0) + sale.price;
       }
 
-      return ChartData(
-        label: label,
-        value: (row['total_sales'] as num).toDouble(),
-      );
-    }).toList();
+      return groupedData.entries.map((entry) {
+        return ChartData(label: entry.key, value: entry.value);
+      }).toList();
+    } catch (e) {
+      print('Error getting sales chart data: $e');
+      return [];
+    }
   }
 
   // Get recent transactions
-  static Future<List<TransactionModel>> getRecentTransactions({int limit = 10}) async {
-    final db = await database;
+  Future<List<TransactionModel>> getRecentTransactions({int limit = 10}) async {
+    try {
+      final salesDb = DatabaseHelper();
+      final salesData = await salesDb.getAllSales();
 
-    final result = await db.rawQuery('''
-      SELECT
-        id,
-        total_amount as amount,
-        sale_date as date,
-        quantity as item_count
-      FROM sales
-      ORDER BY sale_date DESC
-      LIMIT ?
-    ''', [limit]);
-
-    return result.map((row) => TransactionModel.fromMap(row)).toList();
+      return salesData.take(limit).map((saleData) {
+        return TransactionModel(
+          id: saleData['id']?.toString() ?? '',
+          amount: (saleData['price'] as num?)?.toDouble() ?? 0.0,
+          date: _formatDate(saleData['dateTime']?.toString() ?? ''),
+          itemCount: (saleData['quantity'] as num?)?.toInt() ?? 1,
+        );
+      }).toList();
+    } catch (e) {
+      print('Error getting recent transactions: $e');
+      return [];
+    }
   }
 
   // Get top performing products
-  static Future<List<ProductPerformance>> getTopProducts(String period, {int limit = 10}) async {
-    final db = await database;
-    final dateFilter = _getDateFilter(period);
+  Future<List<ProductPerformance>> getTopProducts(
+    String period, {
+    int limit = 10,
+  }) async {
+    try {
+      final salesDb = DatabaseHelper();
+      final stockDb = DatabaseService();
+      final dateRange = _getDateRange(period);
+      final sales = await _getSalesInRange(
+        salesDb,
+        dateRange['start']!,
+        dateRange['end']!,
+      );
 
-    final result = await db.rawQuery('''
-      SELECT
-        p.id,
-        p.name,
-        COALESCE(SUM(s.quantity), 0) as units_sold,
-        COALESCE(SUM(s.total_amount), 0) as revenue,
-        COALESCE(SUM(s.profit), 0) as profit
-      FROM products p
-      LEFT JOIN sales s ON p.id = s.product_id AND s.sale_date >= ?
-      GROUP BY p.id, p.name
-      HAVING units_sold > 0
-      ORDER BY revenue DESC
-      LIMIT ?
-    ''', [dateFilter, limit]);
+      // Group sales by product
+      Map<String, ProductData> productMap = {};
 
-    return result.map((row) => ProductPerformance.fromMap(row)).toList();
+      for (var sale in sales) {
+        if (productMap.containsKey(sale.productName)) {
+          productMap[sale.productName]!.revenue += sale.price;
+          productMap[sale.productName]!.unitsSold += sale.quantity.toInt();
+        } else {
+          productMap[sale.productName] = ProductData(
+            name: sale.productName,
+            revenue: sale.price,
+            unitsSold: sale.quantity.toInt(),
+          );
+        }
+      }
+
+      // Convert to ProductPerformance list and calculate profit
+      List<ProductPerformance> topProducts = [];
+      for (var entry in productMap.entries) {
+        final stock = await stockDb.getStockByName(entry.key);
+        double profit = 0.0;
+
+        if (stock != null) {
+          profit = stock.profitPerUnit * entry.value.unitsSold;
+        } else {
+          // Assume 30% profit margin if stock not found
+          profit = entry.value.revenue * 0.3;
+        }
+
+        topProducts.add(
+          ProductPerformance(
+            id: entry.key.hashCode,
+            name: entry.key,
+            unitsSold: entry.value.unitsSold,
+            revenue: entry.value.revenue,
+            profit: profit,
+          ),
+        );
+      }
+
+      // Sort by revenue and take top products
+      topProducts.sort((a, b) => b.revenue.compareTo(a.revenue));
+      return topProducts.take(limit).toList();
+    } catch (e) {
+      print('Error getting top products: $e');
+      return [];
+    }
   }
 
-  // Get top products chart data
-  static Future<List<ChartData>> getTopProductsChartData(String period, {int limit = 5}) async {
-    final products = await getTopProducts(period, limit: limit);
-
-    return products.map((product) => ChartData(
-      label: product.name.length > 8 ? '${product.name.substring(0, 8)}...' : product.name,
-      value: product.revenue,
-    )).toList();
+  // Helper methods
+  Future<List<Sale>> _getSalesInRange(
+    DatabaseHelper salesDb,
+    DateTime start,
+    DateTime end,
+  ) async {
+    try {
+      final salesData = await salesDb.getSalesByDateRange(start, end);
+      return salesData.map((map) => Sale.fromMap(map)).toList();
+    } catch (e) {
+      print('Error getting sales in range: $e');
+      return [];
+    }
   }
 
-  // Helper method to get date filter based on period
-  static String _getDateFilter(String period) {
+  Map<String, DateTime?> _getDateRange(String period) {
     final now = DateTime.now();
-    DateTime filterDate;
+    DateTime start;
+    DateTime end = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
     switch (period) {
       case 'Today':
-        filterDate = DateTime(now.year, now.month, now.day);
+        start = DateTime(now.year, now.month, now.day);
         break;
       case 'Week':
-        filterDate = now.subtract(Duration(days: now.weekday - 1));
-        filterDate = DateTime(filterDate.year, filterDate.month, filterDate.day);
+        start = now.subtract(Duration(days: now.weekday - 1));
+        start = DateTime(start.year, start.month, start.day);
         break;
       case 'Month':
-        filterDate = DateTime(now.year, now.month, 1);
+        start = DateTime(now.year, now.month, 1);
         break;
       case 'Year':
-        filterDate = DateTime(now.year, 1, 1);
+        start = DateTime(now.year, 1, 1);
         break;
       default:
-        filterDate = DateTime(now.year, now.month, now.day);
+        start = DateTime(now.year, now.month, now.day);
     }
 
-    return filterDate.toIso8601String();
+    return {'start': start, 'end': end};
   }
 
-  // Helper method to get previous period date filter for trend calculation
-  static String _getPreviousDateFilter(String period) {
+  Map<String, DateTime?> _getPreviousDateRange(String period) {
     final now = DateTime.now();
-    DateTime filterDate;
+    DateTime start;
+    DateTime end;
 
     switch (period) {
       case 'Today':
-        filterDate = DateTime(now.year, now.month, now.day - 1);
+        start = DateTime(now.year, now.month, now.day - 1);
+        end = DateTime(now.year, now.month, now.day - 1, 23, 59, 59);
         break;
       case 'Week':
-        filterDate = now.subtract(Duration(days: now.weekday - 1 + 7));
-        filterDate = DateTime(filterDate.year, filterDate.month, filterDate.day);
+        start = now.subtract(Duration(days: now.weekday + 6));
+        start = DateTime(start.year, start.month, start.day);
+        end = now.subtract(Duration(days: now.weekday));
+        end = DateTime(end.year, end.month, end.day, 23, 59, 59);
         break;
       case 'Month':
-        filterDate = DateTime(now.year, now.month - 1, 1);
+        start = DateTime(now.year, now.month - 1, 1);
+        end = DateTime(now.year, now.month, 0, 23, 59, 59);
         break;
       case 'Year':
-        filterDate = DateTime(now.year - 1, 1, 1);
+        start = DateTime(now.year - 1, 1, 1);
+        end = DateTime(now.year - 1, 12, 31, 23, 59, 59);
         break;
       default:
-        filterDate = DateTime(now.year, now.month, now.day - 1);
+        start = DateTime(now.year, now.month, now.day - 1);
+        end = DateTime(now.year, now.month, now.day - 1, 23, 59, 59);
     }
 
-    return filterDate.toIso8601String();
+    return {'start': start, 'end': end};
   }
 
-  // Get sales data for a specific date range
-  static Future<List<Map<String, dynamic>>> getSalesInDateRange(
-      DateTime startDate,
-      DateTime endDate
-      ) async {
-    final db = await database;
-
-    final result = await db.rawQuery('''
-      SELECT s.*, p.name as product_name
-      FROM sales s
-      LEFT JOIN products p ON s.product_id = p.id
-      WHERE s.sale_date >= ? AND s.sale_date <= ?
-      ORDER BY s.sale_date DESC
-    ''', [startDate.toIso8601String(), endDate.toIso8601String()]);
-
-    return result;
+  String _getChartKey(DateTime dateTime, String period) {
+    switch (period) {
+      case 'Today':
+        return '${dateTime.hour.toString().padLeft(2, '0')}:00';
+      case 'Week':
+        return '${dateTime.day}/${dateTime.month}';
+      case 'Month':
+        return '${dateTime.day}/${dateTime.month}';
+      case 'Year':
+        return '${dateTime.month}/${dateTime.year}';
+      default:
+        return '${dateTime.day}/${dateTime.month}';
+    }
   }
 
-  // Get low stock products for dashboard alerts
-  static Future<List<Map<String, dynamic>>> getLowStockProducts({int threshold = 10}) async {
-    final db = await database;
-
-    final result = await db.rawQuery('''
-      SELECT * FROM products
-      WHERE stock_quantity <= ?
-      ORDER BY stock_quantity ASC
-    ''', [threshold]);
-
-    return result;
-  }
-
-  // Get profit margin analysis
-  static Future<List<Map<String, dynamic>>> getProfitMarginAnalysis(String period) async {
-    final db = await database;
-    final dateFilter = _getDateFilter(period);
-
-    final result = await db.rawQuery('''
-      SELECT
-        p.name,
-        COALESCE(SUM(s.quantity), 0) as units_sold,
-        COALESCE(SUM(s.total_amount), 0) as revenue,
-        COALESCE(SUM(s.profit), 0) as total_profit,
-        CASE
-          WHEN SUM(s.total_amount) > 0
-          THEN (SUM(s.profit) / SUM(s.total_amount)) * 100
-          ELSE 0
-        END as profit_margin_percentage
-      FROM products p
-      LEFT JOIN sales s ON p.id = s.product_id AND s.sale_date >= ?
-      GROUP BY p.id, p.name
-      HAVING units_sold > 0
-      ORDER BY profit_margin_percentage DESC
-    ''', [dateFilter]);
-
-    return result;
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateString;
+    }
   }
 }
- */
+
+// Helper class for product data aggregation
+class ProductData {
+  String name;
+  double revenue;
+  int unitsSold;
+
+  ProductData({
+    required this.name,
+    required this.revenue,
+    required this.unitsSold,
+  });
+}

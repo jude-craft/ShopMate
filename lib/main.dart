@@ -19,6 +19,9 @@ void main() async {
   final stockProvider = StockProvider();
   await stockProvider.initializeDatabase();
 
+  // Connect sales provider with stock provider
+  salesProvider.setStockProvider(stockProvider);
+
   runApp(MyApp(
     salesProvider: salesProvider,
     stockProvider: stockProvider,

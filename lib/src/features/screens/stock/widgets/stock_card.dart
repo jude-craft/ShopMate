@@ -139,7 +139,7 @@ class StockCard extends StatelessWidget {
                   Expanded(
                     child: _buildInfoItem(
                       'Buy Price',
-                      '\$${stock.buyingPrice.toStringAsFixed(2)}',
+                      '\Ksh ${stock.buyingPrice.toStringAsFixed(2)}',
                       Icons.money,
                       Colors.orange,
                       isDark,
@@ -148,7 +148,7 @@ class StockCard extends StatelessWidget {
                   Expanded(
                     child: _buildInfoItem(
                       'Sell Price',
-                      '\$${stock.sellingPrice.toStringAsFixed(2)}',
+                      '\Ksh ${stock.sellingPrice.toStringAsFixed(2)}',
                       Icons.money,
                       Colors.blue,
                       isDark,
@@ -167,7 +167,7 @@ class StockCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Total Profit: \$${stock.totalProfit.toStringAsFixed(2)}',
+                          'Total Profit: \Ksh ${stock.totalProfit.toStringAsFixed(2)}',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -175,7 +175,7 @@ class StockCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'Per Unit: \$${stock.profitPerUnit.toStringAsFixed(2)}',
+                          'Per Unit: \Ksh ${stock.profitPerUnit.toStringAsFixed(2)}',
                           style: TextStyle(
                             fontSize: 12,
                             color: isDark ? Colors.white70 : Colors.black54,

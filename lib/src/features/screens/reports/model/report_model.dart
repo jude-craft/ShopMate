@@ -52,7 +52,7 @@ class TransactionModel {
 class ProductPerformance {
   final int id;
   final String name;
-  final int unitsSold;
+  final num unitsSold;
   final double revenue;
   final double profit;
 

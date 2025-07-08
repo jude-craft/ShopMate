@@ -79,7 +79,6 @@ class _AllSalesScreenState extends State<AllSalesScreen>
   }
 
   Widget _buildDateHeader(ThemeProvider themeProvider) {
-    final isDark = themeProvider.isDarkMode;
     final isToday = DateUtils.isSameDay(selectedDate, DateTime.now());
 
     return Container(

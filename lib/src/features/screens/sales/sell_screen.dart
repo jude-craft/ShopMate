@@ -247,7 +247,6 @@ class _SalesScreenState extends State<SalesScreen> {
 
                       const SizedBox(height: 16),
 
-                      // Stock Information Display
                       Consumer<StockProvider>(
                         builder: (context, stockProvider, child) {
                           final stock = stockProvider.getStockByName(_productController.text);

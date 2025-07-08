@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../providers/theme_provider.dart';
 import 'provider/reports_provider.dart';
+import '../sales/provider/sales_provider.dart';
+import '../stock/provider/stock_provider.dart';
 import 'widgets/report_card.dart';
 import 'widgets/report_chart.dart';
 
@@ -23,7 +25,11 @@ class _ReportsScreenState extends State<ReportsScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ReportProvider>().loadReports();
+      final reportProvider = context.read<ReportProvider>();
+      final salesProvider = context.read<SalesProvider>();
+      final stockProvider = context.read<StockProvider>();
+      reportProvider.setProviders(sales: salesProvider, stock: stockProvider);
+      reportProvider.loadReports();
     });
   }
 
@@ -63,7 +69,8 @@ class _ReportsScreenState extends State<ReportsScreen>
               setState(() {
                 selectedPeriod = value;
               });
-              context.read<ReportProvider>().filterByPeriod(value);
+              final reportProvider = context.read<ReportProvider>();
+              reportProvider.filterByPeriod(value);
             },
             itemBuilder: (context) => [
               const PopupMenuItem(value: 'Today', child: Text('Today')),
@@ -99,7 +106,6 @@ class _ReportsScreenState extends State<ReportsScreen>
               ),
               tabs: const [
                 Tab(text: 'Overview'),
-                Tab(text: 'Sales'),
                 Tab(text: 'Products'),
               ],
             ),
@@ -120,7 +126,6 @@ class _ReportsScreenState extends State<ReportsScreen>
             controller: _tabController,
             children: [
               _buildOverviewTab(context, reportProvider),
-              _buildSalesTab(context, reportProvider),
               _buildProductsTab(context, reportProvider),
             ],
           );
@@ -145,23 +150,8 @@ class _ReportsScreenState extends State<ReportsScreen>
             _buildSalesChart(provider),
             const SizedBox(height: 24),
             _buildQuickStats(provider),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSalesTab(BuildContext context, ReportProvider provider) {
-    return RefreshIndicator(
-      onRefresh: () => provider.loadReports(),
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildSalesChart(provider, showDetailed: true),
-            const SizedBox(height: 16),
-            _buildSalesTransactionsList(provider),
+            const SizedBox(height: 24),
+            _buildExtraOverviewStats(provider),
           ],
         ),
       ),
@@ -179,6 +169,8 @@ class _ReportsScreenState extends State<ReportsScreen>
             _buildTopProductsChart(provider),
             const SizedBox(height: 16),
             _buildProductPerformanceList(provider),
+            const SizedBox(height: 16),
+            _buildProductExtraStats(provider),
           ],
         ),
       ),
@@ -245,8 +237,8 @@ class _ReportsScreenState extends State<ReportsScreen>
         Expanded(
           child: ReportCard(
             title: 'Total Sales',
-            value: '\$${provider.totalSales.toStringAsFixed(2)}',
-            icon: Icons.attach_money,
+            value: '\Ksh ${provider.totalSales.toStringAsFixed(2)}',
+            icon: Icons.money,
             color: Colors.green,
             trend: provider.salesTrend,
           ),
@@ -255,7 +247,7 @@ class _ReportsScreenState extends State<ReportsScreen>
         Expanded(
           child: ReportCard(
             title: 'Profit',
-            value: '\$${provider.totalProfit.toStringAsFixed(2)}',
+            value: '\Ksh ${provider.totalProfit.toStringAsFixed(2)}',
             icon: Icons.trending_up,
             color: Colors.blue,
             trend: provider.profitTrend,
@@ -432,122 +424,6 @@ class _ReportsScreenState extends State<ReportsScreen>
     );
   }
 
-  Widget _buildSalesTransactionsList(ReportProvider provider) {
-    final isDark = context.watch<ThemeProvider>().isDarkMode;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withOpacity(0.6)
-                : Colors.black.withOpacity(0.12),
-            blurRadius: isDark ? 20 : 15,
-            offset: const Offset(0, 6),
-            spreadRadius: isDark ? 3 : 1,
-          ),
-          if (isDark)
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-              spreadRadius: 0,
-            ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(isDark ? 0.2 : 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.receipt_long,
-                    color: Colors.green,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Recent Transactions',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: provider.recentTransactions.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              indent: 72,
-              color: isDark ? Colors.grey[800] : Colors.grey[200],
-            ),
-            itemBuilder: (context, index) {
-              final transaction = provider.recentTransactions[index];
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 8,
-                ),
-                leading: CircleAvatar(
-                  backgroundColor: Colors.green.withOpacity(isDark ? 0.2 : 0.1),
-                  child: const Icon(Icons.shopping_bag, color: Colors.green),
-                ),
-                title: Text(
-                  'Sale #${transaction.id}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-                subtitle: Text(
-                  transaction.date,
-                  style: TextStyle(
-                    color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  ),
-                ),
-                trailing: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    '\$${transaction.amount.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
   Widget _buildProductPerformanceList(ReportProvider provider) {
     final isDark = context.watch<ThemeProvider>().isDarkMode;
     final theme = Theme.of(context);
@@ -683,6 +559,76 @@ class _ReportsScreenState extends State<ReportsScreen>
           const SizedBox(height: 8),
         ],
       ),
+    );
+  }
+
+  Widget _buildExtraOverviewStats(ReportProvider provider) {
+    final bestDay = provider.salesChartData.isNotEmpty
+        ? provider.salesChartData.reduce((a, b) => a.value > b.value ? a : b)
+        : null;
+    final avgSale = provider.totalTransactions > 0
+        ? (provider.totalSales / provider.totalTransactions)
+        : 0.0;
+    final mostProfitable = provider.topProducts.isNotEmpty
+        ? provider.topProducts.reduce((a, b) => a.profit > b.profit ? a : b)
+        : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (bestDay != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text('Best ${selectedPeriod == 'Today' ? 'Hour' : selectedPeriod}: ${bestDay.label} (${bestDay.value.toStringAsFixed(2)})',
+                style: const TextStyle(fontWeight: FontWeight.w600)),
+          ),
+        Text('Average Sale Value: ${avgSale.toStringAsFixed(2)}'),
+        if (mostProfitable != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text('Most Profitable Product: ${mostProfitable.name} (${mostProfitable.profit.toStringAsFixed(2)})'),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildSalesExtraStats(ReportProvider provider) {
+    final lowStockTopSellers = provider.topProducts
+        .where((p) => p.unitsSold > 0 && p.unitsSold >= 5 && p.profit > 0 && p.revenue > 0)
+        .take(3)
+        .toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (lowStockTopSellers.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text('Top Sellers (Check Stock!): ' +
+                lowStockTopSellers.map((p) => p.name).join(', '),
+                style: const TextStyle(color: Colors.orange, fontWeight: FontWeight.w600)),
+          ),
+        ElevatedButton.icon(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Export feature coming soon!')),
+            );
+          },
+          icon: const Icon(Icons.file_download),
+          label: const Text('Export Report'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProductExtraStats(ReportProvider provider) {
+    final mostSold = provider.topProducts.isNotEmpty
+        ? provider.topProducts.first
+        : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (mostSold != null)
+          Text('Most Sold Product: ${mostSold.name} (${mostSold.unitsSold} units)'),
+      ],
     );
   }
 }

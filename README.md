@@ -60,7 +60,7 @@ ShopMate is a modern Flutter application designed to help shop owners efficientl
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/shop_mate.git
+   git clone https://github.com/Jude254-programmer/shop_mate.git
    cd shop_mate
    ```
 
@@ -101,7 +101,7 @@ assets/
 
 ## Screenshots
 
-> _Add screenshots of your app here for better presentation!_
+>
 
 ---
 

@@ -18,8 +18,9 @@ void main() {
     await salesProvider.initializeDatabase();
     await stockProvider.initializeDatabase();
 
-    await tester.pumpWidget(MyApp(salesProvider: salesProvider, stockProvider: stockProvider,));
-
+    await tester.pumpWidget(
+      MyApp(salesProvider: salesProvider, stockProvider: stockProvider,
+    ));
 
     expect(find.text('ShopMate'), findsWidgets);
 

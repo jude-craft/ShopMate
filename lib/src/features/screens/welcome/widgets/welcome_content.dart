@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../provider/welcome_provider.dart';
 import '../utils/app_text_styles.dart';
 import 'animated_logo.dart';
 import 'feature_card.dart';
@@ -27,7 +25,7 @@ class WelcomeContent extends StatelessWidget {
       children: [
         // Header Section
         Expanded(
-          flex: 3,
+          flex: 2,
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -77,7 +75,7 @@ class WelcomeContent extends StatelessWidget {
         ),
 
         // Features Section
-        Expanded(
+        Flexible(
           flex: 2,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -149,7 +147,7 @@ class WelcomeContent extends StatelessWidget {
         ),
 
         // Get Started Button
-        Expanded(
+        Flexible(
           flex: 1,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24),

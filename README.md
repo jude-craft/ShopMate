@@ -8,8 +8,9 @@ ShopMate is a modern Flutter application that empowers shop owners to efficientl
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-![ShopMate Icon](assets/images/icon.png)
-
+<p align="center">
+  <img src="assets/images/icon.png" width="200" alt="ShopMate Icon">
+  </p>
 ---
 
 ## ✨ Features
@@ -141,14 +142,15 @@ shop_mate/
 
 *Screenshots will be added soon to showcase the app's interface and features.*
 
-<!-- Uncomment and add your screenshots here
 <p align="center">
-  <img src="screenshots/home.png" width="200" alt="Home Screen">
-  <img src="screenshots/stock.png" width="200" alt="Stock Management">
-  <img src="screenshots/sales.png" width="200" alt="Sales">
-  <img src="screenshots/reports.png" width="200" alt="Reports">
+  <img src="assets/screenshots/welcome.jpg" width="200" alt="Welcome Screen">
+  <img src="assets/screenshots/home.jpg" width="200" alt="Home Screen">
+  <img src="assets/screenshots/stock.jpg" width="200" alt="Stock Management">
+  <img src="assets/screenshots/sales.jpg" width="200" alt="Sales">
+  <img src="assets/screenshots/reports.jpg" width="200" alt="Reports">
+  <img src="assets/screenshots/settings.jpg" width="200" alt="Settings">
 </p>
--->
+
 
 ---
 

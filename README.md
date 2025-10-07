@@ -1,121 +1,226 @@
-# ShopMate
+# 🛍️ ShopMate
 
-ShopMate is a modern Flutter application designed to help shop owners efficiently manage their inventory, record sales, track profits, and receive timely alerts for low or out-of-stock items. With a clean interface and insightful analytics, ShopMate empowers you to make smarter business decisions.
+> Your smart shop assistant for efficient inventory and sales management
+
+ShopMate is a modern Flutter application that empowers shop owners to efficiently manage inventory, record sales, track profits, and receive timely alerts for low or out-of-stock items. With an intuitive interface and insightful analytics, ShopMate helps you make data-driven business decisions.
+
+[![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter)](https://flutter.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
 ![ShopMate Icon](assets/images/icon.png)
 
 ---
 
-## Features
+## ✨ Features
 
-- **Welcome & Onboarding**
-  - Beautiful animated welcome screen for a smooth first-time experience.
+### 🎯 Dashboard & Overview
+- **Real-time Analytics**: View today's sales, product count, and inventory alerts at a glance
+- **Quick Actions**: Instantly add sales or products with one tap
+- **Smart Alerts**: Automatic notifications for low stock and out-of-stock items
 
-- **Home Dashboard**
-  - At-a-glance stats: today’s sales, product count, low/out-of-stock alerts.
-  - Quick actions for adding sales or products.
+### 📦 Stock Management
+- **Complete Product Control**: Add, edit, and delete products with comprehensive details
+- **Detailed Tracking**: Monitor category, supplier, pricing, cost, and expiry dates
+- **Financial Insights**: Track total investment, current stock value, and profit per product
+- **Advanced Filtering**: Search, sort, and filter products by multiple criteria
+- **Stock Alerts**: Real-time notifications for inventory levels
 
-- **Stock Management**
-  - Add, edit, and delete products with details like category, supplier, pricing, and expiry.
-  - Real-time low stock and out-of-stock alerts.
-  - Track total investment, current stock value, and profit per product.
-  - Search, sort, and filter products.
+### 💰 Sales Management
+- **Quick Sales Recording**: Log sales with product, quantity, price, and payment method
+- **Payment Flexibility**: Support for Cash and M-Pesa transactions
+- **Comprehensive History**: View and filter all sales by date, product, or payment method
+- **Automatic Processing**: Real-time stock deduction and profit calculation
 
-- **Sales Management**
-  - Record new sales with product, quantity, price, and payment method (Cash/M-Pesa).
-  - View all sales and filter by date, product, or payment method.
-  - Automatic stock deduction and profit calculation on each sale.
+### 📊 Reports & Analytics
+- **Visual Insights**: Interactive line and bar charts for sales trends
+- **Time Periods**: Analyze performance by day, week, month, or year
+- **Performance Metrics**: Track top products and product-wise analytics
+- **Key Statistics**: Monitor total sales, profit, transactions, and items sold
+- **Export Capability**: Generate reports for external analysis *(coming soon)*
 
-- **Reports & Analytics**
-  - Visual sales trends (line/bar charts) for different periods (Today, Week, Month, Year).
-  - Top products and product performance analytics.
-  - Quick stats: total sales, profit, transactions, items sold, and more.
-  - Export report feature (coming soon).
-
-- **Settings**
-  - Theme switching (light/dark mode).
-  - App customization and preferences.
-
----
-
-## Tech Stack
-
-- **Frontend:** Flutter (Dart)
-- **State Management:** Provider
-- **Database:** SQLite (local, via `sqflite` package)
-- **Charts:** fl_chart
-- **Animations:** lottie, flutter_animate
+### ⚙️ Settings & Customization
+- **Theme Support**: Switch between light and dark modes
+- **Personalization**: Customize app preferences to match your workflow
+- **User-Friendly**: Clean and intuitive settings interface
 
 ---
 
-## Getting Started
+## 🛠️ Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| **Flutter** | Cross-platform UI framework |
+| **Dart** | Programming language |
+| **Provider** | State management solution |
+| **SQLite** | Local database storage via `sqflite` |
+| **fl_chart** | Data visualization and charts |
+| **Lottie** | Beautiful animations |
+| **flutter_animate** | Advanced animation effects |
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install)
-- Dart SDK (comes with Flutter)
-- Android Studio, VS Code, or your preferred IDE
+Before you begin, ensure you have the following installed:
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.0 or higher)
+- Dart SDK (included with Flutter)
+- An IDE: [Android Studio](https://developer.android.com/studio), [VS Code](https://code.visualstudio.com/), or [IntelliJ IDEA](https://www.jetbrains.com/idea/)
 
 ### Installation
 
-1. **Clone the repository:**
+Follow these steps to set up the project locally:
+
+1. **Clone the repository**
    ```bash
-   git clone https://github.com/Jude254-programmer/shop_mate.git
+   git clone https://github.com/jude-craft/shop_mate.git
    cd shop_mate
    ```
 
-2. **Install dependencies:**
+2. **Install dependencies**
    ```bash
    flutter pub get
    ```
 
-3. **Run the app:**
+3. **Run the app**
    ```bash
+   # For development
    flutter run
+   
+   # For specific device
+   flutter run -d <device_id>
+   
+   # For release build
+   flutter run --release
+   ```
+
+4. **Build for production** *(optional)*
+   ```bash
+   # Android APK
+   flutter build apk --release
+   
+   # Android App Bundle
+   flutter build appbundle --release
+   
+   # iOS
+   flutter build ios --release
    ```
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-lib/
-  main.dart                # App entry point
-  src/
-    features/
-      screens/
-        home/              # Home dashboard
-        stock/             # Stock management
-        sales/             # Sales management
-        reports/           # Reports & analytics
-        welcome/           # Welcome/onboarding
-      providers/           # App-wide providers
-      models/              # Data models
-      theme/               # App theming
-      widgets/             # Shared widgets
-assets/
-  images/                  # App icons and images
+shop_mate/
+├── lib/
+│   ├── main.dart                 # Application entry point
+│   └── src/
+│       ├── features/
+│       │   ├── screens/
+│       │   │   ├── home/         # Home dashboard & overview
+│       │   │   ├── stock/        # Inventory management
+│       │   │   ├── sales/        # Sales recording & history
+│       │   │   ├── reports/      # Analytics & insights
+│       │   │   └── welcome/      # Onboarding experience
+│       │   ├── providers/        # State management
+│       │   ├── models/           # Data models & entities
+│       │   ├── theme/            # App theming & styles
+│       │   └── widgets/          # Reusable UI components
+├── assets/
+│   ├── images/                   # App icons & graphics
+│   └── animations/               # Lottie animations
+├── test/                         # Unit & widget tests
+└── pubspec.yaml                  # Project dependencies
 ```
 
 ---
 
-## Screenshots
+## 📸 Screenshots
 
->
+*Screenshots will be added soon to showcase the app's interface and features.*
 
----
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
-
----
-
-## License
-
-This project is licensed under the MIT License.
+<!-- Uncomment and add your screenshots here
+<p align="center">
+  <img src="screenshots/home.png" width="200" alt="Home Screen">
+  <img src="screenshots/stock.png" width="200" alt="Stock Management">
+  <img src="screenshots/sales.png" width="200" alt="Sales">
+  <img src="screenshots/reports.png" width="200" alt="Reports">
+</p>
+-->
 
 ---
 
-**ShopMate** – _Your smart shop assistant!_
+## 🤝 Contributing
 
+We welcome contributions from the community! Here's how you can help:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`)
+3. **Commit your changes** (`git commit -m 'Add some AmazingFeature'`)
+4. **Push to the branch** (`git push origin feature/AmazingFeature`)
+5. **Open a Pull Request**
+
+### Contribution Guidelines
+- Follow the existing code style and structure
+- Write clear commit messages
+- Add tests for new features
+- Update documentation as needed
+- Ensure all tests pass before submitting PR
+
+For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+## 🐛 Bug Reports & Feature Requests
+
+Found a bug or have a feature suggestion? Please check the [issues page](https://github.com/jude-craft/shop_mate/issues) and create a new issue if it doesn't already exist.
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+MIT License
+
+Copyright (c) 2025 ShopMate
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files...
+```
+
+---
+
+## 👨‍💻 Author
+
+**Jude Craft**
+- GitHub: [@jude-craft](https://github.com/jude-craft)
+
+---
+
+## 🙏 Acknowledgments
+
+- Flutter team for the amazing framework
+- Contributors and supporters of this project
+- All the open-source packages used in this project
+
+---
+
+## 📞 Support
+
+If you find this project helpful, please consider:
+- ⭐ Starring the repository
+- 🐛 Reporting bugs
+- 💡 Suggesting new features
+- 📖 Improving documentation
+
+---
+
+<p align="center">
+  <strong>ShopMate</strong> – <em>Simplifying shop management, one transaction at a time</em>
+</p>
+
+<p align="center">Made with ❤️ using Flutter</p>

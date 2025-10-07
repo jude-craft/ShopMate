@@ -7,9 +7,9 @@ import '../model/stock_model.dart';
 import '../provider/stock_provider.dart';
 
 class AddStockDialog extends StatefulWidget {
-  final Stock? stock; // null for add, Stock object for edit
+  final Stock? stock;
 
-  const AddStockDialog({Key? key, this.stock}) : super(key: key);
+  const AddStockDialog({super.key, this.stock});
 
   @override
   State<AddStockDialog> createState() => _AddStockDialogState();
@@ -45,7 +45,7 @@ class _AddStockDialogState extends State<AddStockDialog> {
     if (widget.stock != null) {
       _populateFields();
     } else {
-      _minStockController.text = '5'; // Default min stock level
+      _minStockController.text = '5'; 
     }
   }
 
@@ -206,7 +206,7 @@ class _AddStockDialogState extends State<AddStockDialog> {
                       Row(
                         children: [
                           Expanded(
-                            flex: 2,
+                            flex: 1,
                             child: _buildTextField(
                               controller: _quantityController,
                               label: 'Quantity',
@@ -226,7 +226,7 @@ class _AddStockDialogState extends State<AddStockDialog> {
                               isDark: isDark,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: _buildUnitDropdown(isDark),
                           ),

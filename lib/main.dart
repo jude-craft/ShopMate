@@ -13,14 +13,12 @@ import 'src/features/providers/shop_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize providers that need database setup
   final salesProvider = SalesProvider();
   await salesProvider.initializeDatabase();
 
   final stockProvider = StockProvider();
   await stockProvider.initializeDatabase();
 
-  // Connect sales provider with stock provider
   salesProvider.setStockProvider(stockProvider);
 
   runApp(MyApp(

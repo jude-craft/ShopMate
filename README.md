@@ -140,7 +140,6 @@ shop_mate/
 
 ## 📸 Screenshots
 
-*Screenshots will be added soon to showcase the app's interface and features.*
 
 <p align="center">
   <img src="assets/screenshots/welcome.jpg" width="200" alt="Welcome Screen">

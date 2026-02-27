@@ -20,20 +20,20 @@ ShopMate is a modern Flutter application that empowers shop owners to efficientl
 - **Quick Actions**: Instantly add sales or products with one tap
 - **Smart Alerts**: Automatic notifications for low stock and out-of-stock items
 
-### 📦 Stock Management
+### Stock Management
 - **Complete Product Control**: Add, edit, and delete products with comprehensive details
 - **Detailed Tracking**: Monitor category, supplier, pricing, cost, and expiry dates
 - **Financial Insights**: Track total investment, current stock value, and profit per product
 - **Advanced Filtering**: Search, sort, and filter products by multiple criteria
 - **Stock Alerts**: Real-time notifications for inventory levels
 
-### 💰 Sales Management
+### Sales Management
 - **Quick Sales Recording**: Log sales with product, quantity, price, and payment method
 - **Payment Flexibility**: Support for Cash and M-Pesa transactions
 - **Comprehensive History**: View and filter all sales by date, product, or payment method
 - **Automatic Processing**: Real-time stock deduction and profit calculation
 
-### 📊 Reports & Analytics
+###  Reports & Analytics
 - **Visual Insights**: Interactive line and bar charts for sales trends
 - **Time Periods**: Analyze performance by day, week, month, or year
 - **Performance Metrics**: Track top products and product-wise analytics

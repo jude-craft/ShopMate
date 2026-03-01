@@ -11,7 +11,6 @@ ShopMate is a modern Flutter application that empowers shop owners to efficientl
 <p align="center">
   <img src="assets/images/icon.png" width="200" alt="ShopMate Icon">
   </p>
----
 
 ## ✨ Features
 
@@ -217,6 +216,7 @@ If you find this project helpful, please consider:
 - 🐛 Reporting bugs
 - 💡 Suggesting new features
 - 📖 Improving documentation
+  [Derick Juma](derekjude254@gmail.com)
 
 ---
 

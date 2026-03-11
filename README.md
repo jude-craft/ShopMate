@@ -1,4 +1,4 @@
-# 🛍️ ShopMate
+hi# 🛍️ ShopMate
 
 > Your smart shop assistant for efficient inventory and sales management
 
@@ -224,4 +224,4 @@ If you find this project helpful, please consider:
   <strong>ShopMate</strong> – <em>Simplifying shop management, one transaction at a time</em>
 </p>
 
-<p align="center">Made with ❤️ using Flutter</p>
+

@@ -1,4 +1,4 @@
-hi# 🛍️ ShopMate
+### 🛍️ ShopMate
 
 > Your smart shop assistant for efficient inventory and sales management
 
